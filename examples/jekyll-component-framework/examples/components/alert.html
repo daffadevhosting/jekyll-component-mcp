@@ -1,0 +1,13 @@
+---
+layout: default
+title: Alert examples
+---
+
+<h1>Alert</h1>
+
+<div style="display:grid;gap:1rem">
+  {% include components/alert.html title="Information" message="A general note for visitors." variant="info" %}
+  {% include components/alert.html title="Saved" message="Your changes have been saved." variant="success" %}
+  {% include components/alert.html title="Heads up" message="Review this before continuing." variant="warning" %}
+  {% include components/alert.html title="Unavailable" message="This action could not be completed." variant="danger" %}
+</div>

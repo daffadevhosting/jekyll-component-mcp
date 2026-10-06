@@ -1,0 +1,154 @@
+# jekyll-component-mcp
+
+**AI-native development MCP server for Jekyll projects and reusable Liquid/SCSS/JavaScript components.**
+
+Production-ready Model Context Protocol (MCP) server that lets AI agents understand, inspect, create, validate, build, and document Jekyll component frameworks.
+
+## Features
+
+- **Jekyll-aware tools** — not a generic filesystem wrapper
+- **Component lifecycle** — list, get, create, validate, delete
+- **SCSS + design tokens** — architecture detection and safe updates
+- **Secure by default** — project-root sandbox, allowlisted commands, write modes
+- **Dry-run support** — preview mutations before writing
+- **Resources & prompts** — structured context and review workflows for agents
+
+## Requirements
+
+- Node.js 20+
+- A Jekyll project (optional Gemfile / Bundler)
+
+## Install
+
+```bash
+npm install -g jekyll-component-mcp
+# or use locally
+npx jekyll-component-mcp --root /path/to/jekyll-project
+```
+
+## Quick start
+
+```bash
+# From your Jekyll project root
+jekyll-component-mcp --root .
+
+# Or via environment
+JEKYLL_PROJECT_ROOT=/path/to/project jekyll-component-mcp
+```
+
+### MCP Inspector
+
+```bash
+npm run build
+npx @modelcontextprotocol/inspector node dist/index.js --root /path/to/jekyll-project
+```
+
+## Write modes
+
+| Mode        | Create / Update | Delete / Destructive |
+|-------------|-----------------|----------------------|
+| `read-only` | ❌              | ❌                   |
+| `safe-write` (default) | ✅     | ❌                   |
+| `full-write`| ✅              | ✅ (requires `confirm: true`) |
+
+## CLI options
+
+```
+--root <path>           Project root
+--readonly              read-only mode
+--safe-write            safe-write mode (default)
+--full-write            full-write mode
+--timeout <ms>          Build timeout (default 120000)
+--max-file-size <bytes> Max file size (default 2MiB)
+--debug                 Debug logging to stderr
+```
+
+## Configuration file
+
+Optional `.jekyll-mcp.json` in the project root:
+
+```json
+{
+  "root": ".",
+  "writeMode": "safe-write",
+  "build": {
+    "command": "bundle exec jekyll build",
+    "timeout": 120000
+  },
+  "paths": {
+    "components": "_includes/components",
+    "scss": "assets/scss",
+    "docs": "docs",
+    "layouts": "_layouts"
+  }
+}
+```
+
+## Tools (overview)
+
+| Tool | Purpose |
+|------|---------|
+| `jekyll_project_info` | High-level project summary |
+| `jekyll_project_scan` | Full architecture map |
+| `jekyll_config_get` | Sanitized config |
+| `jekyll_component_list` | List components |
+| `jekyll_component_get` | Component details + sources |
+| `jekyll_component_create` | Create component + SCSS + docs |
+| `jekyll_component_validate` | Structured validation |
+| `jekyll_component_delete` | Destructive delete (full-write + confirm) |
+| `jekyll_build` | Run Jekyll build |
+| `jekyll_doctor` | Run jekyll doctor |
+
+## Resources
+
+- `jekyll://project`
+- `jekyll://components`
+- `jekyll://config`
+
+## Prompts
+
+- `jekyll_component_review`
+- `jekyll_accessibility_review`
+- `jekyll_performance_review`
+- `jekyll_production_review`
+
+## Security
+
+- **Filesystem sandbox**: every path is resolved under the project root; traversal and symlink escapes are rejected.
+- **Command allowlist**: only `jekyll build|clean|doctor` (and `bundle exec` variants). No arbitrary shell.
+- **Write policy**: configurable; destructive ops require `full-write` + `confirm: true`.
+- **Secrets**: config reads redact common secret keys; process output is scrubbed.
+- **stdio**: stdout is reserved for MCP JSON-RPC; all logs go to stderr.
+
+## Client configuration examples
+
+### Claude Desktop / Claude Code
+
+```json
+{
+  "mcpServers": {
+    "jekyll-component": {
+      "command": "npx",
+      "args": ["-y", "jekyll-component-mcp", "--root", "/path/to/jekyll-project"]
+    }
+  }
+}
+```
+
+### Cursor / VS Code
+
+Add an MCP server entry pointing at `node /path/to/jekyll-component-mcp/dist/index.js` with `--root` args as needed.
+
+## Development
+
+```bash
+npm install
+npm run typecheck
+npm run build
+npm test
+npm run dev -- --root ./examples/jekyll-component-framework
+```
+
+## License
+
+MIT

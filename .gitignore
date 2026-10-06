@@ -1,0 +1,14 @@
+node_modules/
+package-lock.json
+dist/
+*.log
+.DS_Store
+.env
+.env.*
+coverage/
+.vitest/
+*.tsbuildinfo
+.jekyll-mcp.local.json
+.cache/
+tmp/
+.temp/

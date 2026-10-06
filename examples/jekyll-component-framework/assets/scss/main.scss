@@ -1,0 +1,60 @@
+@use "tokens/colors";
+@use "tokens/spacing";
+@use "components";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background: var(--color-bg-subtle);
+}
+
+.container {
+  width: min(100% - 2rem, var(--container-max));
+  margin-inline: auto;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+
+  &:focus {
+    left: var(--space-4);
+    top: var(--space-4);
+  }
+}
+
+.site-header {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-4) 0;
+
+  &__brand {
+    font-weight: 700;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+}
+
+.site-main {
+  padding: var(--space-8) 0;
+}
+
+.site-footer {
+  padding: var(--space-6) 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}

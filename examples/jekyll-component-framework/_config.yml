@@ -1,0 +1,27 @@
+title: Jekyll Component Framework Example
+description: Sample project for jekyll-component-mcp
+url: ""
+baseurl: ""
+
+markdown: kramdown
+highlighter: rouge
+
+permalink: pretty
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - README.md
+  - .jekyll-mcp.json
+
+sass:
+  sass_dir: assets/scss
+  style: compressed
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

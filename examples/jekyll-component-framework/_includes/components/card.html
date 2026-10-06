@@ -1,0 +1,26 @@
+{% comment %}
+  Component: card
+  Usage: {% include components/card.html title="Title" body="Body text" variant="default" %}
+{% endcomment %}
+{% assign variant = include.variant | default: "default" %}
+{% assign title = include.title | default: "" %}
+{% assign body = include.body | default: "" %}
+{% assign extra_class = include.class | default: "" %}
+
+<article
+  class="card card--{{ variant | escape }} {{ extra_class | escape }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+>
+  {% if title != blank %}
+    <h3 class="card__title">{{ title | escape }}</h3>
+  {% endif %}
+  {% if body != blank %}
+    <div class="card__body">{{ body | escape }}</div>
+  {% endif %}
+  {% if include.content %}
+    <div class="card__content">{{ include.content }}</div>
+  {% endif %}
+  {% if include.footer %}
+    <footer class="card__footer">{{ include.footer }}</footer>
+  {% endif %}
+</article>

@@ -1,0 +1,28 @@
+{% comment %}
+  Component: alert
+  Usage: {% include components/alert.html title="Heads up" message="Check this detail." variant="info" %}
+{% endcomment %}
+{% assign variant = include.variant | default: "info" %}
+{% assign title = include.title | default: "" %}
+{% assign message = include.message | default: "" %}
+{% assign extra_class = include.class | default: "" %}
+{% assign role = "status" %}
+{% if variant == "warning" or variant == "danger" %}
+  {% assign role = "alert" %}
+{% endif %}
+
+<div
+  class="alert alert--{{ variant | escape }} {{ extra_class | escape }}"
+  role="{{ role }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+>
+  {% if title != blank %}
+    <h2 class="alert__title">{{ title | escape }}</h2>
+  {% endif %}
+  {% if message != blank %}
+    <p class="alert__message">{{ message | escape }}</p>
+  {% endif %}
+  {% if include.content %}
+    <div class="alert__content">{{ include.content }}</div>
+  {% endif %}
+</div>

@@ -1,0 +1,25 @@
+{% comment %}
+  Component: button
+  Usage: {% include components/button.html label="Click me" variant="primary" href="/about" %}
+{% endcomment %}
+{% assign variant = include.variant | default: "primary" %}
+{% assign label = include.label | default: "Button" %}
+{% assign extra_class = include.class | default: "" %}
+{% assign href = include.href %}
+{% assign type = include.type | default: "button" %}
+
+{% if href %}
+  <a
+    class="button button--{{ variant | escape }} {{ extra_class | escape }}"
+    href="{{ href | escape }}"
+    {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+    {% if include.target %}target="{{ include.target | escape }}" rel="noopener noreferrer"{% endif %}
+  >{{ label | escape }}</a>
+{% else %}
+  <button
+    type="{{ type | escape }}"
+    class="button button--{{ variant | escape }} {{ extra_class | escape }}"
+    {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+    {% if include.disabled %}disabled{% endif %}
+  >{{ label | escape }}</button>
+{% endif %}

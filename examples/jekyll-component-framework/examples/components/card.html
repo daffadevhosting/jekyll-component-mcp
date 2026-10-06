@@ -1,0 +1,12 @@
+---
+layout: default
+title: Card examples
+---
+
+<h1>Card</h1>
+
+<div style="display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))">
+  {% include components/card.html title="Default" body="Simple card body." variant="default" %}
+  {% include components/card.html title="Elevated" body="More elevation." variant="elevated" %}
+  {% include components/card.html title="Featured" body="Highlighted border." variant="featured" %}
+</div>
