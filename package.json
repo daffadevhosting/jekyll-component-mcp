@@ -9,6 +9,8 @@
   },
   "files": [
     "dist",
+    ".github/skills",
+    "skills",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"

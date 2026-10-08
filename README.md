@@ -26,6 +26,14 @@ npm install -g jekyll-component-mcp
 npx jekyll-component-mcp --root /path/to/jekyll-project
 ```
 
+## AI Skill
+
+The package includes a skill with instructions for AI agents to install, configure, and use this MCP server. After the package is published, share this URL with an AI agent that can access web links:
+
+<https://unpkg.com/jekyll-component-mcp@latest/skills/SKILL.md>
+
+For repeatable instructions, replace `latest` with a published version, for example `@1.0.0`. You can ask the agent: "Read and follow this skill to set up and use jekyll-component-mcp: [skill URL]".
+
 ## Quick start
 
 ```bash
