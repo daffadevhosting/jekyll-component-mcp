@@ -2,6 +2,14 @@
   "name": "jekyll-component-mcp",
   "version": "1.0.1",
   "description": "AI-native development MCP server for Jekyll projects and reusable Liquid/SCSS/JavaScript components.",
+  "homepage": "https://github.com/daffadevhosting/jekyll-component-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daffadevhosting/jekyll-component-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/daffadevhosting/jekyll-component-mcp/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -36,7 +44,10 @@
     "ai",
     "agent"
   ],
-  "author": "jekyll-component-mcp",
+  "author": {
+    "name": "daffadevhosting",
+    "url": "https://github.com/daffadevhosting"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=20"
