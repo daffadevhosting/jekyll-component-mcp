@@ -192,6 +192,85 @@ export function createServer(ctx: ServerContext): McpServer {
   );
 
   server.registerTool(
+    "list_components",
+    {
+      description:
+        "List reusable Jekyll components and their Liquid, SCSS, JavaScript, documentation, and example paths. Read-only alias for jekyll_component_list.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        return textResult({ components: componentService.list() });
+      } catch (err) {
+        return errorResult("COMPONENT_LIST_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "inspect_component",
+    {
+      description:
+        "Inspect a component's Liquid/SCSS sources, include parameters and fallbacks, variants, and dependencies. Read-only alias for jekyll_component_get.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name"),
+      }),
+    },
+    async ({ name }) => {
+      try {
+        const detail = componentService.get(name);
+        if (!detail) return errorResult("NOT_FOUND", `Component not found: ${name}`);
+        return textResult(detail);
+      } catch (err) {
+        return errorResult("COMPONENT_GET_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "create_component",
+    {
+      description:
+        "Generate a Liquid component, BEM SCSS, and optional docs/example/JavaScript files. Supports dry_run. Alias for jekyll_component_create.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name, normalized to kebab-case"),
+        category: z.string().optional().describe("Optional category label"),
+        variants: z.array(z.string()).optional().describe("Variant names"),
+        javascript: z.boolean().optional().describe("Also create a JS module"),
+        documentation: z.boolean().optional().describe("Create docs (default true)"),
+        example: z.boolean().optional().describe("Create an example (default true)"),
+        dry_run: z.boolean().optional().describe("Preview operations without writing files"),
+      }),
+    },
+    async (input) => {
+      try {
+        logger.info("component_create", { name: input.name, dry_run: input.dry_run });
+        return textResult(componentService.create(input));
+      } catch (err) {
+        return errorResult("COMPONENT_CREATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "validate_component",
+    {
+      description:
+        "Check component Liquid syntax, include parameter fallbacks/guards, and BEM/SCSS naming. Read-only alias for jekyll_component_validate.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name"),
+      }),
+    },
+    async ({ name }) => {
+      try {
+        return textResult(componentService.validate(name));
+      } catch (err) {
+        return errorResult("COMPONENT_VALIDATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     "jekyll_component_delete",
     {
       description:

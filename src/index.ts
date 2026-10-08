@@ -10,6 +10,12 @@ import { createContext } from "./server/context.js";
 import { createServer } from "./server/create-server.js";
 import { setLogLevel, logger } from "./utils/logger.js";
 import { PACKAGE_NAME, PACKAGE_VERSION } from "./config/constants.js";
+import {
+  detectThemePreset,
+  initializeProject,
+  type ThemePreset,
+} from "./cli/init.js";
+import { createInterface } from "node:readline/promises";
 
 function parseArgs(argv: string[]): CliOptions {
   const opts: CliOptions = {};
@@ -62,8 +68,83 @@ Security:
   return opts;
 }
 
-function main(): void {
-  const cli = parseArgs(process.argv.slice(2));
+function isThemePreset(value: string): value is ThemePreset {
+  return value === "standard" || value === "chirpy" || value === "minimal-mistakes";
+}
+
+async function runInit(argv: string[]): Promise<void> {
+  let root = process.cwd();
+  let preset: ThemePreset | undefined;
+  let presetSpecified = false;
+  let force = false;
+  let yes = false;
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--root" && argv[i + 1]) {
+      root = argv[++i]!;
+    } else if (arg === "--preset" && argv[i + 1]) {
+      const value = argv[++i]!;
+      if (value !== "auto" && !isThemePreset(value)) {
+        throw new Error(`Unknown preset "${value}". Choose standard, chirpy, minimal-mistakes, or auto.`);
+      }
+      presetSpecified = true;
+      if (value !== "auto") preset = value;
+    } else if (arg === "--force") {
+      force = true;
+    } else if (arg === "--yes" || arg === "-y") {
+      yes = true;
+    } else if (arg === "--help" || arg === "-h") {
+      console.log(`Usage: jekyll-component-mcp init [options]
+
+Create a .jekyll-mcp.json configuration for the current Jekyll project.
+
+Options:
+  --root <path>       Project directory (default: current directory)
+  --preset <preset>   auto, standard, chirpy, or minimal-mistakes
+  --force             Replace an existing .jekyll-mcp.json
+  --yes, -y           Skip interactive preset selection
+  -h, --help          Show this help`);
+      return;
+    } else {
+      throw new Error(`Unknown init option: ${arg}`);
+    }
+  }
+
+  const detectedPreset = detectThemePreset(root);
+  if (!preset && !presetSpecified && !yes && process.stdin.isTTY) {
+    const readline = createInterface({ input: process.stdin, output: process.stdout });
+    try {
+      const answer = await readline.question(
+        `Detected ${detectedPreset} preset. Choose standard, chirpy, or minimal-mistakes [${detectedPreset}]: `,
+      );
+      if (answer.trim()) {
+        const selectedPreset = answer.trim();
+        if (!isThemePreset(selectedPreset)) {
+          throw new Error("Preset must be standard, chirpy, or minimal-mistakes.");
+        }
+        preset = selectedPreset;
+      }
+    } finally {
+      readline.close();
+    }
+  }
+
+  const result = initializeProject(root, preset ?? detectedPreset, force);
+  console.log(`Created ${result.configPath}`);
+  console.log(`Theme preset: ${result.preset}`);
+  console.log(`Component includes: ${result.paths.components}`);
+  console.log(`SCSS components: ${result.paths.scssComponents}`);
+}
+
+async function main(): Promise<void> {
+  const argv = process.argv.slice(2);
+  if (argv[0] === "init") {
+    await runInit(argv.slice(1));
+    return;
+  }
+
+  const cli = parseArgs(argv);
   const config = resolveConfig(cli);
 
   if (config.debug) {
@@ -82,4 +163,7 @@ function main(): void {
   void serveStdio(() => createServer(ctx));
 }
 
-main();
+void main().catch((error: unknown) => {
+  console.error(`${PACKAGE_NAME}: ${(error as Error).message}`);
+  process.exitCode = 1;
+});

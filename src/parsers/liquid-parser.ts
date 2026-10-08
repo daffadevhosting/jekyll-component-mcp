@@ -7,6 +7,8 @@ export interface LiquidParameter {
   name: string;
   usageCount: number;
   examples: string[];
+  hasDefault: boolean;
+  hasGuard: boolean;
 }
 
 export interface LiquidAnalysis {
@@ -50,7 +52,16 @@ export function analyzeLiquid(source: string): LiquidAnalysis {
   }
 
   const parameters: LiquidParameter[] = [...paramMap.entries()]
-    .map(([name, v]) => ({ name, usageCount: v.count, examples: v.examples }))
+    .map(([name, v]) => ({
+      name,
+      usageCount: v.count,
+      examples: v.examples,
+      hasDefault: new RegExp(`include\\.${name}\\s*\\|\\s*default\\s*:`, "i").test(source),
+      hasGuard: new RegExp(
+        `\\{%\\s*(?:if|unless)\\b[^%]*\\binclude\\.${name}\\b[^%]*%\\}`,
+        "i",
+      ).test(source),
+    }))
     .sort((a, b) => b.usageCount - a.usageCount);
 
   const classNames = new Set<string>();

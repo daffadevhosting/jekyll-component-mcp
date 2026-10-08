@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0
+
+### Added
+
+- `jekyll-component-mcp init` with automatic Jekyll theme/path detection and standard, Chirpy, and Minimal Mistakes presets
+- Component tool aliases: `list_components`, `inspect_component`, `create_component`, and `validate_component`
+- Liquid include fallback/guard and BEM/SCSS naming checks
+- Liquid documentation headers and safe defaults in generated components
+
 ## 1.0.0
 
 ### Added

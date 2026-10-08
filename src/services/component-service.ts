@@ -71,18 +71,27 @@ function defaultLiquidTemplate(name: string, variants: string[]): string {
   const variantList = variants.length ? variants.join(", ") : "default";
   return `{% comment %}
   Component: ${name}
-  Variants: ${variantList}
+  Description: Reusable ${name} component.
+  Parameters:
+    - label: Optional visible label; defaults to an empty string.
+    - variant: Visual variant (${variantList}); defaults to "default".
+    - class: Optional extra CSS classes; defaults to an empty string.
+    - id: Optional HTML id; rendered only when provided.
+    - content: Optional nested Liquid/HTML content.
   Usage: {% include components/${name}.html label="Click me" variant="default" %}
 {% endcomment %}
 {% assign variant = include.variant | default: "default" %}
 {% assign label = include.label | default: "" %}
 {% assign extra_class = include.class | default: "" %}
+{% assign content = include.content | default: "" %}
 
-<div class="${classBase} ${classBase}--{{ variant }} {{ extra_class }}"{% if include.id %} id="{{ include.id }}"{% endif %}>
+<div class="${classBase} ${classBase}--{{ variant | escape }} {{ extra_class | escape }}"{% if include.id %} id="{{ include.id | escape }}"{% endif %}>
   {% if label != blank %}
-    <span class="${classBase}__label">{{ label }}</span>
+    <span class="${classBase}__label">{{ label | escape }}</span>
   {% endif %}
-  {{ include.content }}
+  {% if content != blank %}
+    <div class="${classBase}__content">{{ content }}</div>
+  {% endif %}
 </div>
 `;
 }
@@ -446,10 +455,37 @@ export class ComponentService {
       for (const h of analysis.accessibilityHints) {
         warnings.push({ file: detail.liquid, message: h });
       }
+      for (const parameter of analysis.parameters) {
+        if (!parameter.hasDefault && !parameter.hasGuard) {
+          warnings.push({
+            file: detail.liquid,
+            message: `include.${parameter.name} has no default fallback or if/unless guard`,
+          });
+        }
+      }
     }
 
     if (!detail.scss) {
       warnings.push({ message: "No associated SCSS file detected" });
+    } else {
+      const expectedFilename = `_${normalized}.scss`;
+      if (path.posix.basename(detail.scss) !== expectedFilename) {
+        warnings.push({
+          file: detail.scss,
+          message: `SCSS filename should follow the BEM component name: ${expectedFilename}`,
+        });
+      }
+      if (
+        detail.scssSource &&
+        !new RegExp(`\\.${normalized}(?:__[-\\w]+|--[-\\w]+)?\\s*(?:\\{|:)`).test(
+          detail.scssSource,
+        )
+      ) {
+        warnings.push({
+          file: detail.scss,
+          message: `SCSS should define a BEM selector beginning with .${normalized}`,
+        });
+      }
     }
 
     if (!detail.documentation) {

@@ -41,6 +41,14 @@ Replace the root with the actual Jekyll project path. For VS Code, use the clien
 
 To run a local checkout during development, use `npm install`, `npm run build`, then configure the client to launch `node /absolute/path/to/jekyll-component-mcp/dist/index.js` with `--root` and the project path as arguments.
 
+To create a project configuration interactively or with automatic theme detection, run:
+
+```sh
+npx -y jekyll-component-mcp init
+```
+
+Use `--root <path>` to target another project, `--preset auto|standard|chirpy|minimal-mistakes` to select a preset, and `--force` only when you intend to replace an existing `.jekyll-mcp.json`. The initializer detects common include, Sass, layout, and data directories and keeps generated paths relative to the project root.
+
 ## Safe operating workflow
 
 1. Confirm the MCP server is connected and its `jekyll_*` tools are available. If not, check Node.js 20+, the configured package command, and that the project root exists.
@@ -56,12 +64,13 @@ To run a local checkout during development, use `npm install`, `npm run build`, 
 | --- | --- |
 | Project overview and structure | `jekyll_project_info`, `jekyll_project_scan`, `jekyll_config_get` |
 | Components | `jekyll_component_list`, `jekyll_component_get`, `jekyll_component_create`, `jekyll_component_validate`, `jekyll_component_delete` |
+| Component aliases | `list_components`, `inspect_component`, `create_component`, `validate_component` |
 | SCSS and design tokens | `jekyll_scss_list`, `jekyll_scss_get`, `jekyll_scss_create`, `jekyll_token_list`, `jekyll_token_get`, `jekyll_token_update` |
 | Liquid includes and layouts | `jekyll_include_list`, `jekyll_include_get`, `jekyll_layout_list`, `jekyll_layout_get` |
 | Documentation | `jekyll_docs_create`, `jekyll_docs_update` |
 | Validation and build | `jekyll_validate`, `jekyll_build`, `jekyll_doctor` |
 
-For component creation, `jekyll_component_create` accepts `name`, optional `category`, `variants`, `javascript`, `documentation`, `example`, and `dry_run`. Prefer this tool over separate file creation when the user asks for a reusable component; it scaffolds the Liquid component and associated assets/docs/examples.
+For component creation, `jekyll_component_create` or `create_component` accepts `name`, optional `category`, `variants`, `javascript`, `documentation`, `example`, and `dry_run`. Prefer this tool over separate file creation when the user asks for a reusable component; it scaffolds the Liquid component and associated assets/docs/examples. `inspect_component` reports Liquid include parameters and detected defaults/guards alongside source and SCSS details. `validate_component` checks Liquid fallbacks/guards and BEM/SCSS naming.
 
 Use the review prompts when supported by the MCP client: `jekyll_component_review`, `jekyll_accessibility_review`, `jekyll_performance_review`, and `jekyll_production_review`. Available resources include `jekyll://project`, `jekyll://components`, `jekyll://tokens`, `jekyll://config`, and `jekyll://documentation`.
 

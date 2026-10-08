@@ -37,6 +37,9 @@ For repeatable instructions, replace `latest` with a published version, for exam
 ## Quick start
 
 ```bash
+# Generate .jekyll-mcp.json (detects standard Jekyll, Chirpy, or Minimal Mistakes)
+jekyll-component-mcp init
+
 # From your Jekyll project root
 jekyll-component-mcp --root .
 
@@ -62,6 +65,8 @@ npx @modelcontextprotocol/inspector node dist/index.js --root /path/to/jekyll-pr
 ## CLI options
 
 ```
+jekyll-component-mcp init [--root <path>] [--preset auto|standard|chirpy|minimal-mistakes] [--force] [--yes]
+
 --root <path>           Project root
 --readonly              read-only mode
 --safe-write            safe-write mode (default)
@@ -70,6 +75,11 @@ npx @modelcontextprotocol/inspector node dist/index.js --root /path/to/jekyll-pr
 --max-file-size <bytes> Max file size (default 2MiB)
 --debug                 Debug logging to stderr
 ```
+
+`init` detects common Jekyll include, Sass, layout, and data directories, then writes a
+ready-to-use `.jekyll-mcp.json`. It preserves an existing configuration unless
+`--force` is supplied. In an interactive terminal, the detected theme preset can be
+confirmed or changed.
 
 ## Configuration file
 
@@ -103,6 +113,8 @@ Optional `.jekyll-mcp.json` in the project root:
 | `jekyll_component_get` | Component details + sources |
 | `jekyll_component_create` | Create component + SCSS + docs |
 | `jekyll_component_validate` | Structured validation |
+| `list_components` / `inspect_component` | Aliases for component discovery and inspection |
+| `create_component` / `validate_component` | Aliases for generation and validation |
 | `jekyll_component_delete` | Destructive delete (full-write + confirm) |
 | `jekyll_build` | Run Jekyll build |
 | `jekyll_doctor` | Run jekyll doctor |
