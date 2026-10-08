@@ -38,7 +38,7 @@ For repeatable instructions, replace `latest` with a published version, for exam
 
 The GitHub Actions workflow publishes to npm when a version tag is pushed. Before the first release, configure npm Trusted Publishing for this GitHub repository and the `.github/workflows/publish-npm.yml` workflow. The workflow uses OIDC and does not require an npm token secret.
 
-To publish a release, update the package version, commit the change, then push a matching tag such as `v1.0.1`. The workflow checks that the tag matches `package.json`, runs typecheck, tests, and build, then publishes the package with provenance.
+To publish a release, update the package version, commit the change, then push a matching tag such as `v1.0.2`. The workflow checks that the tag matches `package.json`, runs typecheck, tests, and build, then publishes the package with provenance.
 
 ## Quick start
 
