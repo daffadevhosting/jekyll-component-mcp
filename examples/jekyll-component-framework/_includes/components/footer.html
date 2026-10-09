@@ -1,0 +1,26 @@
+{% comment %}
+  Component: footer
+  Usage: {% include components/footer.html text="Built with care." links=site.navigation %}
+{% endcomment %}
+{% assign text = include.text %}
+{% assign links = include.links | default: empty %}
+{% assign extra_class = include.class | default: "" %}
+
+<footer class="site-footer {{ extra_class | escape }}" role="contentinfo"{% if include.id %} id="{{ include.id | escape }}"{% endif %}>
+  <div class="container site-footer__inner">
+    <p class="site-footer__text">
+      {% if text %}{{ text | escape }}{% else %}&copy; {{ site.time | date: '%Y' }} {{ site.title | escape }}{% endif %}
+    </p>
+    {% if links and links.size > 0 %}
+      <nav class="site-footer__nav" aria-label="{{ include.nav_label | default: 'Footer navigation' | escape }}">
+        <ul class="site-footer__list">
+          {% for link in links %}
+            <li class="site-footer__item">
+              <a class="site-footer__link" href="{{ link.url | relative_url | escape }}">{{ link.title | escape }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+</footer>

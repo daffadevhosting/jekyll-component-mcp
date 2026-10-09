@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+### Added
+
+- Reusable header and footer components in the example Jekyll framework, with styles, documentation, and example pages
+
 ## 1.1.0
 
 ### Added

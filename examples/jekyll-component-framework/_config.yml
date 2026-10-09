@@ -3,6 +3,20 @@ description: Sample project for jekyll-component-mcp
 url: ""
 baseurl: ""
 
+navigation:
+  - title: Home
+    url: "/"
+  - title: Button
+    url: "/examples/components/button/"
+  - title: Card
+    url: "/examples/components/card/"
+  - title: Alert
+    url: "/examples/components/alert/"
+  - title: Header
+    url: "/examples/components/header/"
+  - title: Footer
+    url: "/examples/components/footer/"
+
 markdown: kramdown
 highlighter: rouge
 

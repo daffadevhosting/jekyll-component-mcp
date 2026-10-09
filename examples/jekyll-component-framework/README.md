@@ -5,7 +5,7 @@ Minimal sample site for exercising **jekyll-component-mcp**.
 ## Structure
 
 ```
-_includes/components/   # Liquid components (button, card)
+_includes/components/   # Liquid components (button, card, alert, header, footer)
 assets/scss/
   tokens/               # Design tokens (CSS custom properties)
   components/           # Component SCSS partials

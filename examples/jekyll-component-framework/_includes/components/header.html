@@ -1,0 +1,25 @@
+{% comment %}
+  Component: header
+  Usage: {% include components/header.html brand=site.title links=site.navigation %}
+{% endcomment %}
+{% assign brand = include.brand | default: site.title %}
+{% assign brand_url = include.brand_url | default: "/" %}
+{% assign links = include.links | default: site.navigation %}
+{% assign extra_class = include.class | default: "" %}
+
+<header class="site-header {{ extra_class | escape }}" role="banner"{% if include.id %} id="{{ include.id | escape }}"{% endif %}>
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="{{ brand_url | relative_url | escape }}">{{ brand | escape }}</a>
+    {% if links and links.size > 0 %}
+      <nav class="site-header__nav" aria-label="{{ include.nav_label | default: 'Main navigation' | escape }}">
+        <ul class="site-header__list">
+          {% for link in links %}
+            <li class="site-header__item">
+              <a class="site-header__link" href="{{ link.url | relative_url | escape }}"{% if page.url == link.url %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  </div>
+</header>

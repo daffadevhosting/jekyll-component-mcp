@@ -12,6 +12,8 @@ Sample project used by **jekyll-component-mcp**.
 - [Button]({{ '/examples/components/button/' | relative_url }})
 - [Card]({{ '/examples/components/card/' | relative_url }})
 - [Alert]({{ '/examples/components/alert/' | relative_url }})
+- [Header]({{ '/examples/components/header/' | relative_url }})
+- [Footer]({{ '/examples/components/footer/' | relative_url }})
 
 ## Quick include
 
