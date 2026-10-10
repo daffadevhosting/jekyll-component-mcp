@@ -14,6 +14,7 @@ Use this skill to set up `jekyll-component-mcp` as an MCP server and operate it 
 - A Jekyll project directory to use as the server's project root. Ruby/Bundler and Jekyll are only needed for build and doctor operations.
 
 The package is an MCP server, not a Jekyll theme or a runtime dependency for the site. Install it globally or let the MCP client run it with `npx`.
+At startup, the server checks the npm registry for a newer release at most once per day and logs an update notice when one is available. Registry or network failures do not prevent startup.
 
 ## Install and configure
 
@@ -55,7 +56,7 @@ Use `--root <path>` to target another project, `--preset auto|standard|chirpy|mi
 2. Start with `jekyll_project_info`. Use `jekyll_project_scan` when file locations or architecture matter. Use `jekyll_config_get` for site configuration; secrets are redacted.
 3. Before changing an existing component, inspect it with `jekyll_component_list` and `jekyll_component_get`. Inspect SCSS with `jekyll_scss_list` / `jekyll_scss_get`, tokens with `jekyll_token_list` / `jekyll_token_get`, and Liquid includes or layouts with their corresponding list/get tools.
 4. Match the repository's existing component, naming, Liquid, SCSS, and documentation conventions. Do not assume default paths when scan results are available.
-5. For requested writes, use the smallest relevant tool. Preview supported mutations with `dry_run: true`, review the reported operations, then run with `dry_run: false` or omit `dry_run` to apply them. Clearly report when the configured write mode prevents a change.
+5. For requested writes, use the smallest relevant tool. For `jekyll_component_create`, `dry_run: true` returns planned operations and unified diffs; review them before applying. For `jekyll_docs_update`, dry-run reports only the target path, not a content diff, and a normal update regenerates the target file. Clearly report when the configured write mode prevents a change.
 6. After changes, run `jekyll_component_validate` for a component and/or `jekyll_validate`. If the project has the needed Ruby/Jekyll environment, run `jekyll_build` to verify the site.
 
 ## Tool reference
@@ -63,14 +64,17 @@ Use `--root <path>` to target another project, `--preset auto|standard|chirpy|mi
 | Task | MCP tools |
 | --- | --- |
 | Project overview and structure | `jekyll_project_info`, `jekyll_project_scan`, `jekyll_config_get` |
-| Components | `jekyll_component_list`, `jekyll_component_get`, `jekyll_component_create`, `jekyll_component_validate`, `jekyll_component_delete` |
+| Components | `jekyll_component_list`, `jekyll_component_get`, `jekyll_component_catalog`, `jekyll_component_create`, `jekyll_component_preview`, `jekyll_component_validate`, `jekyll_component_delete` |
 | Component aliases | `list_components`, `inspect_component`, `create_component`, `validate_component` |
+| Catalog and preview aliases | `component_catalog`, `preview_component` |
 | SCSS and design tokens | `jekyll_scss_list`, `jekyll_scss_get`, `jekyll_scss_create`, `jekyll_token_list`, `jekyll_token_get`, `jekyll_token_update` |
 | Liquid includes and layouts | `jekyll_include_list`, `jekyll_include_get`, `jekyll_layout_list`, `jekyll_layout_get` |
 | Documentation | `jekyll_docs_create`, `jekyll_docs_update` |
 | Validation and build | `jekyll_validate`, `jekyll_build`, `jekyll_doctor` |
 
 For component creation, `jekyll_component_create` or `create_component` accepts `name`, optional `category`, `variants`, `javascript`, `documentation`, `example`, and `dry_run`. Prefer this tool over separate file creation when the user asks for a reusable component; it scaffolds the Liquid component and associated assets/docs/examples. `inspect_component` reports Liquid include parameters and detected defaults/guards alongside source and SCSS details. `validate_component` checks Liquid fallbacks/guards and BEM/SCSS naming.
+
+Use `jekyll_component_catalog` or `component_catalog` for a read-only overview of discovered components, including status, tags, summaries, path coverage, variants, and parameter counts. Use `jekyll_component_preview` or `preview_component` to generate a lightweight HTML sample with a selected variant and parameters; it is a preview, not a full Jekyll render. `jekyll_docs_update` accepts `category` as well as overview, variants, parameters, accessibility guidance, and notes. Its dry-run only identifies the target path, so inspect the existing documentation before applying an update that could replace authored content.
 
 Use the review prompts when supported by the MCP client: `jekyll_component_review`, `jekyll_accessibility_review`, `jekyll_performance_review`, and `jekyll_production_review`. Available resources include `jekyll://project`, `jekyll://components`, `jekyll://tokens`, `jekyll://config`, and `jekyll://documentation`.
 

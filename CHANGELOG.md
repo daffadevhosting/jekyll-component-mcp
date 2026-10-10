@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.2
+
+### Changed
+
+- Updated both distributed skill files for component catalog, HTML preview, documentation update behavior, and daily npm update notices
+
 ## 1.2.1
 
 ### Changed
