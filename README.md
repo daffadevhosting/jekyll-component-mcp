@@ -2,8 +2,17 @@
 
 **AI-native development MCP server for Jekyll projects and reusable Liquid/SCSS/JavaScript components.**
 
-Production-ready Model Context Protocol (MCP) server that lets AI agents understand, inspect, create, validate, build, and document Jekyll component frameworks.
+[![npm version](https://img.shields.io/npm/v/jekyll-component-mcp.svg)](https://www.npmjs.com/package/jekyll-component-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/jekyll-component-mcp.svg)](https://www.npmjs.com/package/jekyll-component-mcp)
+[![Node.js Version](https://img.shields.io/node/v/jekyll-component-mcp.svg)](https://www.npmjs.com/package/jekyll-component-mcp)
+[![GitHub Repo stars](https://img.shields.io/github/stars/daffadevhosting/jekyll-component-mcp?style=social)](https://github.com/daffadevhosting/jekyll-component-mcp)
+[![GitHub release](https://img.shields.io/github/v/release/daffadevhosting/jekyll-component-mcp)](https://github.com/daffadevhosting/jekyll-component-mcp/releases)
+[![License: MIT](https://img.shields.io/github/license/daffadevhosting/jekyll-component-mcp)](https://github.com/daffadevhosting/jekyll-component-mcp/blob/main/LICENSE)
+[![Issues](https://img.shields.io/github/issues/daffadevhosting/jekyll-component-mcp)](https://github.com/daffadevhosting/jekyll-component-mcp/issues)
+[![Dependabot Status](https://img.shields.io/badge/dependabot-enabled-025E8C?logo=dependabot)](https://github.com/daffadevhosting/jekyll-component-mcp/network/updates)
 
+Production-ready Model Context Protocol (MCP) server that lets AI agents understand, inspect, create, validate, build, and document Jekyll component frameworks.
+---
 ## Features
 
 - **Jekyll-aware tools** — not a generic filesystem wrapper
