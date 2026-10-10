@@ -3,7 +3,7 @@
  */
 
 export const PACKAGE_NAME = "jekyll-component-mcp";
-export const PACKAGE_VERSION = "1.2.0";
+export const PACKAGE_VERSION = "1.2.1";
 
 /** Default write policy when none is specified. */
 export const DEFAULT_WRITE_MODE = "safe-write" as const;

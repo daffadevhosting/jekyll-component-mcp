@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1
+
+### Changed
+
+- Improved `jekyll_docs_update` tool metadata with parameter descriptions and the supported `category` field
+
 ## 1.2.0
 
 ### Added

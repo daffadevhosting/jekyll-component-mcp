@@ -605,24 +605,26 @@ export function createServer(ctx: ServerContext): McpServer {
     "jekyll_docs_update",
     {
       description:
-        "Update or regenerate documentation for a component. Fills gaps from detected Liquid parameters when possible. Modifies project files. Supports dry_run.",
+        "Regenerate a component's Markdown documentation at the configured component-docs path. Omitted variants and parameters are inferred from the component when possible; other omitted content uses generated defaults. This rewrites the target documentation file. Set dry_run to preview the target path without writing.",
       inputSchema: z.object({
-        name: z.string(),
-        overview: z.string().optional(),
-        variants: z.array(z.string()).optional(),
+        name: z.string().describe("Component name; normalized to kebab-case to locate its documentation file."),
+        overview: z.string().optional().describe("Markdown overview text for the component."),
+        category: z.string().optional().describe("Documentation category written to the generated front matter. Defaults to general."),
+        variants: z.array(z.string()).optional().describe("Component variants to list. If omitted, detected variants are used when available."),
         parameters: z
           .array(
             z.object({
-              name: z.string(),
-              type: z.string().optional(),
-              default: z.string().optional(),
-              description: z.string().optional(),
-            }),
+              name: z.string().describe("Liquid parameter name."),
+              type: z.string().optional().describe("Parameter type shown in the documentation table."),
+              default: z.string().optional().describe("Parameter default shown in the documentation table."),
+              description: z.string().optional().describe("Human-readable explanation of the parameter."),
+            }).describe("A documented Liquid component parameter."),
           )
-          .optional(),
-        accessibility: z.string().optional(),
-        notes: z.string().optional(),
-        dry_run: z.boolean().optional(),
+          .optional()
+          .describe("Parameters to document. If omitted, detected Liquid parameters are used when available."),
+        accessibility: z.string().optional().describe("Accessibility guidance to include in the generated documentation."),
+        notes: z.string().optional().describe("Additional notes to include in the generated documentation."),
+        dry_run: z.boolean().optional().describe("When true, report the target path without writing or modifying the documentation file."),
       }),
     },
     async (input) => {

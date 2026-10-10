@@ -1,6 +1,6 @@
 {
   "name": "jekyll-component-mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "AI-native development MCP server for Jekyll projects and reusable Liquid/SCSS/JavaScript components.",
   "homepage": "https://github.com/daffadevhosting/jekyll-component-mcp#readme",
   "repository": {
