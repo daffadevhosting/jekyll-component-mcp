@@ -9,6 +9,7 @@ import { resolveConfig, type CliOptions } from "./config/environment.js";
 import { createContext } from "./server/context.js";
 import { createServer } from "./server/create-server.js";
 import { setLogLevel, logger } from "./utils/logger.js";
+import { checkForPackageUpdateOncePerDay } from "./utils/update-check.js";
 import { PACKAGE_NAME, PACKAGE_VERSION } from "./config/constants.js";
 import {
   detectThemePreset,
@@ -156,6 +157,17 @@ async function main(): Promise<void> {
     writeMode: config.writeMode,
     buildTimeout: config.build.timeout,
   });
+
+  const updateCheck = await checkForPackageUpdateOncePerDay(PACKAGE_NAME, PACKAGE_VERSION);
+  if (updateCheck.isUpdateAvailable) {
+    logger.warn(
+      `A newer version of ${PACKAGE_NAME} is available (${updateCheck.currentVersion} -> ${updateCheck.latestVersion}). Update with: ${updateCheck.updateCommand}`,
+      {
+        currentVersion: updateCheck.currentVersion,
+        latestVersion: updateCheck.latestVersion,
+      },
+    );
+  }
 
   const ctx = createContext(config);
 

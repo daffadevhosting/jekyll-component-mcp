@@ -142,6 +142,22 @@ export function createServer(ctx: ServerContext): McpServer {
   );
 
   server.registerTool(
+    "jekyll_component_catalog",
+    {
+      description:
+        "Return a catalog view of all discovered components with status, tags, summary, path coverage, variants, and parameter counts. Ideal for quick project/component library reviews.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        return textResult({ components: componentService.getCatalog() });
+      } catch (err) {
+        return errorResult("COMPONENT_CATALOG_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     "jekyll_component_create",
     {
       description:
@@ -169,6 +185,34 @@ export function createServer(ctx: ServerContext): McpServer {
         return textResult(result);
       } catch (err) {
         return errorResult("COMPONENT_CREATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_preview",
+    {
+      description:
+        "Generate a lightweight HTML preview for a component using a sample payload and selected variant. Useful for reviewing a component before committing it to a page.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name"),
+        variant: z.string().optional().describe("Variant to preview, e.g. default or success"),
+        params: z
+          .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+          .optional()
+          .describe("Sample parameters such as label, content, class, id"),
+      }),
+    },
+    async ({ name, variant, params }) => {
+      try {
+        return textResult(
+          componentService.preview(name, {
+            variant,
+            params: params as Record<string, string | number | boolean | null | undefined> | undefined,
+          }),
+        );
+      } catch (err) {
+        return errorResult("COMPONENT_PREVIEW_FAILED", (err as Error).message);
       }
     },
   );
@@ -228,6 +272,22 @@ export function createServer(ctx: ServerContext): McpServer {
   );
 
   server.registerTool(
+    "component_catalog",
+    {
+      description:
+        "Return a catalog overview of all components with status, tags, summary, path coverage, parameter counts, and variants. Read-only alias for jekyll_component_catalog.",
+      inputSchema: z.object({}),
+    },
+    async () => {
+      try {
+        return textResult({ components: componentService.getCatalog() });
+      } catch (err) {
+        return errorResult("COMPONENT_CATALOG_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     "create_component",
     {
       description:
@@ -266,6 +326,34 @@ export function createServer(ctx: ServerContext): McpServer {
         return textResult(componentService.validate(name));
       } catch (err) {
         return errorResult("COMPONENT_VALIDATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "preview_component",
+    {
+      description:
+        "Generate a lightweight HTML preview for a component using sample params and variant names. Alias for jekyll_component_preview.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name"),
+        variant: z.string().optional().describe("Variant to preview"),
+        params: z
+          .record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()]))
+          .optional()
+          .describe("Preview arguments like label, content, class, id"),
+      }),
+    },
+    async ({ name, variant, params }) => {
+      try {
+        return textResult(
+          componentService.preview(name, {
+            variant,
+            params: params as Record<string, string | number | boolean | null | undefined> | undefined,
+          }),
+        );
+      } catch (err) {
+        return errorResult("COMPONENT_PREVIEW_FAILED", (err as Error).message);
       }
     },
   );

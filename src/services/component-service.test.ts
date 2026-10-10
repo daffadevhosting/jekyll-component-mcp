@@ -97,4 +97,112 @@ describe("component inspection and validation", () => {
       '@use "./components/testimonial";',
     );
   });
+
+  it("builds a component catalog with derived status, tags, and summary", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "nav-item.html"),
+      `{% assign label = include.label | default: "Menu" %}\n<div class="nav-item nav-item--primary">{{ label }}</div>\n`,
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "components", "_nav-item.scss"),
+      ".nav-item { &--primary { color: red; } }\n",
+    );
+    fs.mkdirSync(path.join(root, "_docs", "components"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "_docs", "components", "nav-item.md"),
+      "---\ntitle: Nav Item\n---\n\n## Overview\n\nNavigation item component.\n",
+    );
+
+    const service = createService(root);
+    const catalog = service.getCatalog();
+
+    expect(catalog).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "nav-item",
+          status: "stable",
+          summary: expect.stringContaining("Navigation item"),
+          tags: expect.arrayContaining(["scss", "documented", "varianted"]),
+        }),
+      ]),
+    );
+  });
+
+  it("returns a diff preview for dry-run component creation", () => {
+    const root = makeProject();
+    fs.writeFileSync(path.join(root, "_sass", "main.scss"), "@use \"tokens/colors\";\n");
+
+    const service = createService(root);
+    const result = service.create({ name: "hero", dry_run: true });
+
+    expect(result.success).toBe(true);
+    expect(result.dry_run).toBe(true);
+    expect(result.diff ?? result.diffs?.[0]?.diff ?? "").toContain("--- _includes/components/hero.html");
+    expect(result.diff ?? result.diffs?.[0]?.diff ?? "").toContain(
+      '+<div class="hero hero--{{ variant | escape }} {{ extra_class | escape }}"',
+    );
+  });
+
+  it("rejects invalid component schema before creating files", () => {
+    const root = makeProject();
+    const service = createService(root);
+
+    const result = service.create({
+      name: "promo-card",
+      variants: ["Primary!", "primary", "default"],
+      dry_run: false,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.code).toBe("VALIDATION_ERROR");
+    expect(result.error?.message).toContain("variant");
+  });
+
+  it("renders a preview HTML sample for a component", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "alert.html"),
+      `{% assign label = include.label | default: "System" %}\n{% assign variant = include.variant | default: "default" %}\n<div class="alert alert--{{ variant }}">{{ label }}</div>\n`,
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "components", "_alert.scss"),
+      ".alert { &--success { color: green; } }\n",
+    );
+
+    const service = createService(root);
+    const result = service.preview("alert", {
+      variant: "success",
+      params: { label: "System update" },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.html).toContain('class="alert alert--success"');
+    expect(result.html).toContain("System update");
+  });
+
+  it("stores category metadata in generated docs and catalog entries", () => {
+    const root = makeProject();
+    const service = createService(root);
+
+    const result = service.create({
+      name: "cta-banner",
+      category: "marketing",
+      variants: ["default", "primary"],
+      dry_run: false,
+    });
+
+    expect(result.success).toBe(true);
+    const docs = fs.readFileSync(path.join(root, "_docs", "components", "cta-banner.md"), "utf8");
+    expect(docs).toContain("category: marketing");
+    expect(service.getCatalog()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: "cta-banner",
+          category: "marketing",
+          tags: expect.arrayContaining(["marketing"]),
+        }),
+      ]),
+    );
+  });
 });

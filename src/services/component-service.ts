@@ -19,6 +19,7 @@ import { logger } from "../utils/logger.js";
 
 export interface ComponentDescriptor {
   name: string;
+  category?: string;
   liquid?: string;
   scss?: string;
   javascript?: string;
@@ -35,6 +36,18 @@ export interface ComponentDetail extends ComponentDescriptor {
   variants: string[];
   accessibilityNotes: string[];
   classNames: string[];
+}
+
+export interface ComponentCatalogEntry extends ComponentDescriptor {
+  category: string;
+  status: "stable" | "draft" | "experimental";
+  summary: string;
+  tags: string[];
+  hasDocumentation: boolean;
+  hasExample: boolean;
+  fileCount: number;
+  parameters: ReturnType<typeof analyzeLiquid>["parameters"];
+  variants: string[];
 }
 
 export interface CreateComponentInput {
@@ -55,6 +68,24 @@ export interface MutationResult {
   files_modified?: string[];
   dry_run?: boolean;
   operations?: Array<{ type: string; path: string }>;
+  diff?: string;
+  diffs?: Array<{ path: string; diff: string }>;
+  warnings?: string[];
+  error?: { code: string; message: string; details?: unknown };
+}
+
+export interface PreviewInput {
+  variant?: string;
+  params?: Record<string, string | number | boolean | null | undefined>;
+}
+
+export interface PreviewResult {
+  success: boolean;
+  component: string;
+  variant: string;
+  html: string;
+  classNames: string[];
+  params: Record<string, string | number | boolean | null | undefined>;
   warnings?: string[];
   error?: { code: string; message: string; details?: unknown };
 }
@@ -118,9 +149,10 @@ function defaultScssTemplate(name: string, variants: string[]): string {
   return lines.join("\n");
 }
 
-function defaultDocsTemplate(name: string, variants: string[]): string {
+function defaultDocsTemplate(name: string, variants: string[], category = "general"): string {
   return `---
 title: ${name}
+category: ${category}
 ---
 
 # ${name}
@@ -174,6 +206,95 @@ title: ${name} example
 `;
 }
 
+function normalizeVariantValue(raw: string): string {
+  const normalized = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  if (!normalized) {
+    throw new Error(`variant name contains no valid characters: ${String(raw)}`);
+  }
+  if (normalized.length > 32) {
+    throw new Error(`variant name exceeds maximum length of 32 chars: ${normalized}`);
+  }
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalized)) {
+    throw new Error(`variant name must be kebab-case and alphanumeric: ${normalized}`);
+  }
+
+  return normalized;
+}
+
+function validateComponentSchema(input: {
+  name: string;
+  category?: string;
+  variants?: string[];
+}): string[] {
+  const errors: string[] = [];
+  const name = typeof input.name === "string" ? input.name.trim() : "";
+  if (!name) errors.push("Component name is required");
+
+  if (typeof input.category === "string") {
+    const category = input.category.trim();
+    if (category.length === 0) {
+      errors.push("Category cannot be empty");
+    } else if (category.length > 64) {
+      errors.push("Category must be 64 chars or fewer");
+    }
+  }
+
+  const seen = new Set<string>();
+  for (const rawVariant of input.variants ?? []) {
+    if (typeof rawVariant !== "string") {
+      errors.push("Variant entries must be strings");
+      continue;
+    }
+
+    try {
+      const variant = normalizeVariantValue(rawVariant);
+      if (seen.has(variant)) {
+        errors.push(`variant name must be unique after normalization: ${variant}`);
+      } else {
+        seen.add(variant);
+      }
+    } catch (err) {
+      errors.push((err as Error).message);
+    }
+  }
+
+  return errors;
+}
+
+function buildUnifiedDiff(relativePath: string, before: string, after: string): string {
+  const beforeLines = before === "" ? [""] : before.split(/\r?\n/);
+  const afterLines = after === "" ? [""] : after.split(/\r?\n/);
+
+  const header = [`--- ${relativePath}`, `+++ ${relativePath}`];
+  const lines = [...header, `@@ -0,0 +1,${afterLines.length} @@`];
+
+  for (const line of afterLines) {
+    lines.push(`+${line}`);
+  }
+
+  if (beforeLines.length > 0 && beforeLines.join("\n") !== afterLines.join("\n")) {
+    lines.push(`@@ -1,${beforeLines.length} +1,${afterLines.length} @@`);
+  }
+
+  return lines.join("\n");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export class ComponentService {
   private project: ProjectService;
 
@@ -184,6 +305,68 @@ export class ComponentService {
   list(): ComponentDescriptor[] {
     const scan = this.project.getScan();
     return scan.components;
+  }
+
+  getCatalog(): ComponentCatalogEntry[] {
+    return this.list()
+      .map((component) => {
+        const detail = this.get(component.name);
+        const categoryMatch = detail?.documentationSource?.match(/^category:\s*(.+)$/m);
+        const category = (categoryMatch?.[1] ?? component.category ?? "general").trim();
+
+        const tags = new Set<string>();
+        const files = [
+          component.liquid,
+          component.scss,
+          component.javascript,
+          component.documentation,
+          component.example,
+        ].filter((value): value is string => Boolean(value));
+
+        tags.add(category);
+        if (component.scss) tags.add("scss");
+        if (component.javascript) tags.add("javascript");
+        if (component.documentation) tags.add("documented");
+        if (component.example) tags.add("example");
+        if ((detail?.variants ?? []).some((variant) => variant !== "default")) {
+          tags.add("varianted");
+        }
+        if ((detail?.parameters ?? []).length > 0) tags.add("parameterized");
+
+        let summary = "Reusable Jekyll component";
+        if (detail?.documentationSource) {
+          const overviewMatch = detail.documentationSource.match(
+            /## Overview\s*\n+([\s\S]*?)(?:\n## |\n---|\n$)/,
+          );
+          if (overviewMatch) {
+            summary = overviewMatch[1].trim().replace(/\s+/g, " ");
+          } else {
+            const firstLine = detail.documentationSource
+              .replace(/^---[\s\S]*?---\s*/, "")
+              .split(/\n+/)
+              .find((line) => line.trim().length > 0);
+            if (firstLine) summary = firstLine.replace(/^#+\s*/, "").trim();
+          }
+        }
+
+        const status: ComponentCatalogEntry["status"] =
+          component.liquid && component.scss && component.documentation ? "stable" :
+          component.liquid ? "draft" : "experimental";
+
+        return {
+          ...component,
+          category,
+          status,
+          summary,
+          tags: [...tags],
+          hasDocumentation: Boolean(component.documentation),
+          hasExample: Boolean(component.example),
+          fileCount: files.length,
+          parameters: detail?.parameters ?? [],
+          variants: detail?.variants ?? ["default"],
+        };
+      })
+      .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
   }
 
   get(name: string): ComponentDetail | null {
@@ -242,10 +425,28 @@ export class ComponentService {
   }
 
   create(input: CreateComponentInput): MutationResult {
+    const schemaErrors = validateComponentSchema({
+      name: input.name,
+      category: input.category,
+      variants: input.variants,
+    });
+    if (schemaErrors.length > 0) {
+      return {
+        success: false,
+        operation: "component_create",
+        component: input.name,
+        error: {
+          code: "VALIDATION_ERROR",
+          message: `Component schema validation failed: ${schemaErrors.join("; ")}`,
+        },
+      };
+    }
+
     const name = normalizeComponentName(input.name);
     const variants = (input.variants?.length ? input.variants : ["default"]).map((v) =>
-      v.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+      normalizeVariantValue(v),
     );
+    const category = (input.category ?? "general").trim() || "general";
     const dryRun = input.dry_run === true;
     const paths = this.ctx.config.paths;
     const root = this.ctx.config.root;
@@ -301,12 +502,40 @@ export class ComponentService {
     }
 
     if (dryRun) {
+      const previewFiles = [
+        { path: liquidPath, content: defaultLiquidTemplate(name, variants) },
+        { path: scssPath, content: defaultScssTemplate(name, variants) },
+      ];
+
+      if (docsPath) {
+        previewFiles.push({
+          path: docsPath,
+          content: defaultDocsTemplate(name, variants, category),
+        });
+      }
+      if (examplePath) {
+        previewFiles.push({ path: examplePath, content: defaultExampleTemplate(name) });
+      }
+      if (jsPath) {
+        previewFiles.push({
+          path: jsPath,
+          content: `// Component: ${name}\nexport function init${name.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase())}() {\n  // TODO\n}\n`,
+        });
+      }
+
+      const diffs = previewFiles.map((entry) => ({
+        path: entry.path,
+        diff: buildUnifiedDiff(entry.path, "", entry.content),
+      }));
+
       return {
         success: true,
         operation: "component_create",
         component: name,
         dry_run: true,
         operations: planned,
+        diff: diffs.map((entry) => entry.diff).join("\n\n"),
+        diffs,
         warnings,
       };
     }
@@ -334,9 +563,12 @@ export class ComponentService {
       else if (scssResult.modified) filesModified.push(scssResult.path);
 
       if (docsPath) {
-        const r = safeWriteFile(root, docsPath, defaultDocsTemplate(name, variants), {
-          maxSize: this.ctx.config.maxFileSize,
-        });
+        const r = safeWriteFile(
+          root,
+          docsPath,
+          defaultDocsTemplate(name, variants, category),
+          { maxSize: this.ctx.config.maxFileSize },
+        );
         if (r.created) filesCreated.push(r.path);
         else if (r.modified) filesModified.push(r.path);
       }
@@ -428,6 +660,61 @@ export class ComponentService {
     warnings.push(
       "No SCSS entry point found to register the component import. Add the import manually.",
     );
+  }
+
+  preview(name: string, input: PreviewInput = {}): PreviewResult {
+    const detail = this.get(name);
+    if (!detail) {
+      return {
+        success: false,
+        component: normalizeComponentName(name),
+        variant: input.variant ?? "default",
+        html: "",
+        classNames: [],
+        params: {},
+        error: {
+          code: "NOT_FOUND",
+          message: `Component not found: ${name}`,
+        },
+      };
+    }
+
+    const variant =
+      input.variant && detail.variants.includes(input.variant)
+        ? input.variant
+        : detail.variants[0] ?? "default";
+    const rawParams = input.params ?? {};
+    const params = {
+      label: rawParams.label ?? "Example",
+      variant,
+      class: rawParams.class ?? "",
+      id: rawParams.id ?? "",
+      content: rawParams.content ?? `<span class="${detail.name}__content">Preview content</span>`,
+    } as Record<string, string | number | boolean | null | undefined>;
+
+    const classNames = [detail.name, `${detail.name}--${variant}`];
+    const extraClass = typeof params.class === "string" ? params.class.trim() : "";
+    if (extraClass) classNames.push(extraClass);
+
+    const escapedLabel = escapeHtml(String(params.label));
+    const contentMarkup = typeof params.content === "string" ? params.content : String(params.content);
+    const renderedId = typeof params.id === "string" && params.id.trim() ? ` id="${escapeHtml(params.id.trim())}"` : "";
+
+    const html = `
+<div class="${classNames.join(" ")}"${renderedId}>
+  <span class="${detail.name}__label">${escapedLabel}</span>
+  ${contentMarkup}
+</div>
+`.trim();
+
+    return {
+      success: true,
+      component: detail.name,
+      variant,
+      html,
+      classNames,
+      params,
+    };
   }
 
   validate(name: string): ValidateResult {

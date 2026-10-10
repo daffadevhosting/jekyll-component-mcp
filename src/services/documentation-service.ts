@@ -12,6 +12,7 @@ import { logger } from "../utils/logger.js";
 
 function buildDocsMarkdown(input: {
   name: string;
+  category?: string;
   overview?: string;
   parameters?: Array<{ name: string; type?: string; default?: string; description?: string }>;
   variants?: string[];
@@ -35,6 +36,7 @@ function buildDocsMarkdown(input: {
 
   return `---
 title: ${input.name}
+category: ${input.category ?? "general"}
 ---
 
 # ${input.name}
@@ -88,6 +90,7 @@ export class DocumentationService {
   create(input: {
     name: string;
     overview?: string;
+    category?: string;
     variants?: string[];
     parameters?: Array<{ name: string; type?: string; default?: string; description?: string }>;
     dry_run?: boolean;
@@ -129,6 +132,7 @@ export class DocumentationService {
 
     const content = buildDocsMarkdown({
       name,
+      category: input.category ?? "general",
       overview: input.overview,
       variants: input.variants,
       parameters: input.parameters,
@@ -145,6 +149,7 @@ export class DocumentationService {
   update(input: {
     name: string;
     overview?: string;
+    category?: string;
     variants?: string[];
     parameters?: Array<{ name: string; type?: string; default?: string; description?: string }>;
     accessibility?: string;
@@ -194,6 +199,7 @@ export class DocumentationService {
 
     const content = buildDocsMarkdown({
       name,
+      category: input.category ?? "general",
       overview: input.overview,
       variants,
       parameters,

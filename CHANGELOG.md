@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+### Added
+
+- Component catalog with categories, status, summaries, tags, variants, and parameters
+- Dry-run component creation previews with unified diffs and rendered HTML previews
+- Component schema validation and category metadata in generated documentation and catalog entries
+- Daily npm update checks with cached results to avoid repeated network requests and notifications
+
 ## 1.1.1
 
 ### Added
