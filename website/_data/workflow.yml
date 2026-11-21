@@ -1,0 +1,9 @@
+- number: "01"
+  title: Connect
+  description: Point your MCP client at the server and your Jekyll project root.
+- number: "02"
+  title: Explore
+  description: Start with project info, then inspect components and conventions before editing.
+- number: "03"
+  title: Create with confidence
+  description: Preview generated files, apply the change, and validate the component or site.

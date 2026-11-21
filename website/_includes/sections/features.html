@@ -1,0 +1,19 @@
+<section class="section features-section" id="features">
+  <div class="container">
+    <div class="section-heading">
+      <p class="eyebrow">A useful assistant starts with context</p>
+      <h2>From project insight<br>to polished components.</h2>
+      <p>Keep discovery, implementation, and validation together in one Jekyll-aware toolset.</p>
+    </div>
+    <div class="feature-grid">
+      {% for feature in site.data.features %}
+        <article class="feature-card">
+          <span class="feature-number">{{ feature.number }}</span>
+          <p class="feature-eyebrow">{{ feature.eyebrow }}</p>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>

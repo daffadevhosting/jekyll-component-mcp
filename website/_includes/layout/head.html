@@ -1,0 +1,24 @@
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% seo %}
+  <script>
+    (function () {
+      var theme;
+      try {
+        theme = localStorage.getItem("theme");
+      } catch (error) {
+        console.warn("Theme preference is unavailable.", error);
+      }
+      document.documentElement.dataset.theme =
+        theme === "dark" || theme === "light"
+          ? theme
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+    })();
+  </script>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="{{ site.thicket_css }}">
+  <link rel="stylesheet" href="{{ '/assets/css/main.css' | relative_url }}">
+</head>

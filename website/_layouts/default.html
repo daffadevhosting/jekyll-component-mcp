@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  {% include layout/head.html %}
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% include layout/header.html %}
+    <main id="main">
+      {{ content }}
+    </main>
+    {% include layout/footer.html %}
+    <script src="{{ '/assets/js/theme.js' | relative_url }}" defer></script>
+    <script src="{{ '/assets/js/header.js' | relative_url }}" defer></script>
+  </body>
+</html>

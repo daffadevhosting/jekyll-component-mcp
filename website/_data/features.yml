@@ -1,0 +1,12 @@
+- number: "01"
+  eyebrow: Understand
+  title: Know your Jekyll project
+  description: Scan layouts, includes, components, styles, and configuration before making a change. Sensitive configuration values are redacted.
+- number: "02"
+  eyebrow: Create
+  title: Build reusable components
+  description: Scaffold a Liquid component with matching SCSS, documentation, and an example—then preview it before you use it.
+- number: "03"
+  eyebrow: Validate
+  title: Keep quality in the loop
+  description: Check Liquid patterns, styles, docs, accessibility hints, and parameter consistency. Build and doctor tools stay Jekyll-focused.

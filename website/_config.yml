@@ -1,0 +1,22 @@
+title: jekyll-component-mcp
+description: An MCP server that helps AI agents explore, create, validate, and document reusable Jekyll components.
+url: "https://jekyll-mcp.pages.dev"
+baseurl: ""
+lang: en
+markdown: kramdown
+permalink: pretty
+github_url: https://github.com/daffadevhosting/jekyll-component-mcp
+npm_url: https://www.npmjs.com/package/jekyll-component-mcp
+thicket_css: https://unpkg.com/thicket-ui@1.4.5/dist/thicket.css
+author:
+  name: jekyll-component-mcp
+social:
+  name: jekyll-component-mcp
+  links:
+    - https://github.com/daffadevhosting/jekyll-component-mcp
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+exclude:
+  - Gemfile
+  - Gemfile.lock

@@ -1,0 +1,35 @@
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> Your Jekyll workflow, in context</p>
+      <h1>Better building blocks for <em>Jekyll.</em></h1>
+      <p class="hero-intro">Give your AI assistant the context and tools to explore, create, and validate reusable Liquid components—right inside your project.</p>
+      <div class="hero-actions">
+        {% include components/button.html url="#get-started" label="Get started" arrow=true %}
+        {% include components/button.html url=site.github_url label="Explore on GitHub" variant="quiet" external=true %}
+      </div>
+      <p class="hero-note">Open source <span aria-hidden="true">·</span> Node.js 20+ <span aria-hidden="true">·</span> Works with MCP clients</p>
+    </div>
+    <div class="hero-visual" aria-label="Example Jekyll component workflow" role="img">
+      <div class="visual-topbar">
+        <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>your-jekyll-site</span>
+        <span class="connected"><i></i> connected</span>
+      </div>
+      <div class="visual-body">
+        <p class="terminal-label">ASSISTANT / JEKYLL COMPONENT MCP</p>
+        <p class="terminal-prompt"><span>›</span> jekyll_project_info</p>
+        <div class="project-summary">
+          <div class="summary-title"><span class="summary-icon" aria-hidden="true">⌘</span> Project overview</div>
+          <div class="summary-row"><span>Components</span><strong>12 found</strong></div>
+          <div class="summary-row"><span>SCSS system</span><strong class="status-good">Detected</strong></div>
+          <div class="summary-row"><span>Write mode</span><strong>safe-write</strong></div>
+        </div>
+        <p class="terminal-prompt terminal-prompt--second"><span>›</span> Create a reusable alert component</p>
+        <div class="file-result"><span class="file-plus" aria-hidden="true">+</span> Liquid, SCSS, docs &amp; example <span class="file-check" aria-hidden="true">✓</span></div>
+      </div>
+      <div class="visual-footer"><span>PROJECT-ROOT SANDBOXED</span><span>READY TO BUILD <i></i></span></div>
+    </div>
+  </div>
+  <div class="hero-accent" aria-hidden="true"></div>
+</section>
