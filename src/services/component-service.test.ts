@@ -16,6 +16,28 @@ function makeProject(): string {
   return root;
 }
 
+function makeThicketProject(): string {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "jekyll-mcp-thicket-"));
+  temporaryRoots.push(root);
+  for (const directory of [
+    "_includes/components",
+    "assets/scss/components",
+    "assets/js/components",
+    "docs/components",
+    "examples/components",
+  ]) {
+    fs.mkdirSync(path.join(root, directory), { recursive: true });
+  }
+  fs.writeFileSync(path.join(root, "assets/scss", "_tokens.scss"), ":root {}\n");
+  fs.writeFileSync(path.join(root, "assets/scss", "_framework.scss"), '@use "tokens";\n');
+  fs.writeFileSync(
+    path.join(root, "assets/js", "main.js"),
+    "import { initTheme } from './components/theme.js';\n\n" +
+      "document.addEventListener('DOMContentLoaded', () => {\n  initTheme();\n});\n",
+  );
+  return root;
+}
+
 function createService(root: string): ComponentService {
   const config = resolveConfig({ root });
   config.paths.scss = "_sass";
@@ -23,6 +45,10 @@ function createService(root: string): ComponentService {
   config.paths.docs = "_docs";
   config.paths.docsComponents = "_docs/components";
   return new ComponentService(createContext(config));
+}
+
+function createDefaultService(root: string): ComponentService {
+  return new ComponentService(createContext(resolveConfig({ root })));
 }
 
 afterEach(() => {
@@ -73,7 +99,7 @@ describe("component inspection and validation", () => {
     expect(result.warnings.map((warning) => warning.message)).toEqual(
       expect.arrayContaining([
         "include.message has no default fallback or if/unless guard",
-        "SCSS should define a BEM selector beginning with .notice",
+        "SCSS should define a BEM selector beginning with .notice or .c-notice",
       ]),
     );
   });
@@ -203,6 +229,95 @@ describe("component inspection and validation", () => {
           tags: expect.arrayContaining(["marketing"]),
         }),
       ]),
+    );
+  });
+
+  it("uses Thicket BEM classes and registers SCSS in the framework entry point", () => {
+    const root = makeThicketProject();
+    const service = createDefaultService(root);
+
+    const result = service.create({ name: "promo-card" });
+
+    expect(result.success).toBe(true);
+    const liquid = fs.readFileSync(
+      path.join(root, "_includes", "components", "promo-card.html"),
+      "utf8",
+    );
+    const scss = fs.readFileSync(
+      path.join(root, "assets", "scss", "components", "_promo-card.scss"),
+      "utf8",
+    );
+    const frameworkScss = fs.readFileSync(path.join(root, "assets", "scss", "_framework.scss"), "utf8");
+
+    expect(liquid).toContain('class="c-promo-card c-promo-card--{{ variant');
+    expect(scss).toContain(".c-promo-card {");
+    expect(frameworkScss).toContain('@use "components/promo-card";');
+    expect(result.files_modified).toContain("assets/scss/_framework.scss");
+  });
+
+  it("validates existing Thicket component classes without legacy-prefix warnings", () => {
+    const root = makeThicketProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "alert.html"),
+      `{% assign variant = include.variant | default: "info" %}\n<div class="c-alert c-alert--{{ variant }}"></div>\n`,
+    );
+    fs.writeFileSync(
+      path.join(root, "assets", "scss", "components", "_alert.scss"),
+      ".c-alert { &--info { color: red; } }\n",
+    );
+    fs.writeFileSync(path.join(root, "docs", "components", "alert.md"), "# Alert\n");
+
+    const service = createDefaultService(root);
+    const validation = service.validate("alert");
+    const preview = service.preview("alert", { variant: "info" });
+
+    expect(validation.warnings).toEqual([]);
+    expect(preview.html).toContain('class="c-alert c-alert--info"');
+  });
+
+  it("registers opt-in Thicket JavaScript modules in the main entry point", () => {
+    const root = makeThicketProject();
+    const service = createDefaultService(root);
+
+    const result = service.create({
+      name: "toast-alert",
+      javascript: true,
+      documentation: false,
+      example: false,
+    });
+
+    const mainJs = fs.readFileSync(path.join(root, "assets", "js", "main.js"), "utf8");
+    expect(result.success).toBe(true);
+    expect(mainJs).toContain("import { initToastAlert } from './components/toast-alert.js';");
+    expect(mainJs).toContain("  initToastAlert();");
+    expect(result.files_modified).toContain("assets/js/main.js");
+  });
+
+  it("previews Thicket entry-point changes without modifying the project", () => {
+    const root = makeThicketProject();
+    const service = createDefaultService(root);
+
+    const result = service.create({
+      name: "toast-alert",
+      javascript: true,
+      dry_run: true,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.operations).toEqual(
+      expect.arrayContaining([
+        { type: "update", path: "assets/scss/_framework.scss" },
+        { type: "update", path: "assets/js/main.js" },
+      ]),
+    );
+    expect(result.diffs?.find((entry) => entry.path === "assets/scss/_framework.scss")?.diff).toContain(
+      '@use "components/toast-alert";',
+    );
+    expect(
+      fs.readFileSync(path.join(root, "assets/scss", "_framework.scss"), "utf8"),
+    ).not.toContain("components/toast-alert");
+    expect(fs.readFileSync(path.join(root, "assets/js", "main.js"), "utf8")).not.toContain(
+      "initToastAlert",
     );
   });
 });

@@ -97,8 +97,83 @@ export interface ValidateResult {
   warnings: Array<{ file?: string; message: string }>;
 }
 
-function defaultLiquidTemplate(name: string, variants: string[]): string {
-  const classBase = name;
+function isThicketProject(root: string, scssRoot: string): boolean {
+  return (
+    safeExists(root, path.posix.join(scssRoot, "_framework.scss")) &&
+    safeExists(root, path.posix.join(scssRoot, "_tokens.scss"))
+  );
+}
+
+function componentClassBase(name: string, thicket: boolean): string {
+  if (!thicket) return name;
+  return name.startsWith("c-") ? name : `c-${name}`;
+}
+
+function componentInitFunction(name: string): string {
+  return `init${name.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase())}`;
+}
+
+function updateScssEntry(
+  source: string,
+  entry: string,
+  scssRoot: string,
+  scssPath: string,
+  name: string,
+): string | null {
+  if (findImportForComponent(source, name).present) return null;
+
+  const entryDir = path.posix.dirname(entry);
+  let importPath = path.posix.relative(entryDir, scssPath).replace(/\.scss$/, "");
+  if (!importPath.startsWith(".")) importPath = `./${importPath}`;
+  if (entry === path.posix.join(scssRoot, "_framework.scss")) {
+    importPath = path.posix.join("components", name);
+  }
+  importPath = importPath.replace(/\/_([^/]+)$/, "/$1");
+
+  const line = `@use "${importPath}";\n`;
+  return source.endsWith("\n") ? source + line : source + "\n" + line;
+}
+
+function updateThicketMainJs(
+  source: string,
+  initFunction: string,
+  importPath: string,
+): { source: string; warning?: never } | { source?: never; warning: string } {
+  const importLine = `import { ${initFunction} } from '${importPath}';`;
+  let next = source;
+
+  const hasImport = next.split(/\r?\n/).some(
+    (line) =>
+      /^\s*import\b/.test(line) &&
+      line.includes(importPath) &&
+      line.includes(initFunction),
+  );
+  if (!hasImport) {
+    const lines = next.split(/\r?\n/);
+    let lastImport = -1;
+    lines.forEach((line, index) => {
+      if (/^\s*import\b/.test(line)) lastImport = index;
+    });
+    lines.splice(lastImport + 1, 0, importLine);
+    next = lines.join("\n");
+  }
+
+  const listener =
+    /(document\.addEventListener\(\s*(['"])DOMContentLoaded\2\s*,\s*\(\)\s*=>\s*\{)([\s\S]*?)(\n\s*\}\s*\);)/;
+  const match = next.match(listener);
+  if (!match) {
+    return { warning: "Could not find a DOMContentLoaded initializer in the JavaScript entry point." };
+  }
+  if (!match[3]!.includes(`${initFunction}();`)) {
+    const body = match[3]!.replace(/\s*$/, "");
+    const updated = `${match[1]}${body}\n  ${initFunction}();${match[4]}`;
+    next = next.replace(listener, updated);
+  }
+
+  return { source: next };
+}
+
+function defaultLiquidTemplate(name: string, variants: string[], classBase = name): string {
   const variantList = variants.length ? variants.join(", ") : "default";
   return `{% comment %}
   Component: ${name}
@@ -127,10 +202,10 @@ function defaultLiquidTemplate(name: string, variants: string[]): string {
 `;
 }
 
-function defaultScssTemplate(name: string, variants: string[]): string {
+function defaultScssTemplate(name: string, variants: string[], classBase = name): string {
   const lines = [
     `// Component: ${name}`,
-    `.${name} {`,
+    `.${classBase} {`,
     `  // Base styles`,
     ``,
     `  &__label {`,
@@ -450,6 +525,8 @@ export class ComponentService {
     const dryRun = input.dry_run === true;
     const paths = this.ctx.config.paths;
     const root = this.ctx.config.root;
+    const thicketProject = isThicketProject(root, paths.scss);
+    const classBase = componentClassBase(name, thicketProject);
 
     try {
       assertWriteAllowed(this.ctx, "create");
@@ -493,18 +570,53 @@ export class ComponentService {
     if (examplePath) planned.push({ type: "create", path: examplePath });
     if (jsPath) planned.push({ type: "create", path: jsPath });
 
-    // Check collisions
     const warnings: string[] = [];
+    const integrationPreviewFiles: Array<{ path: string; content: string }> = [];
+    if (dryRun && thicketProject) {
+      const frameworkEntry = path.posix.join(paths.scss, "_framework.scss");
+      try {
+        const source = safeReadFile(root, frameworkEntry, { maxSize: this.ctx.config.maxFileSize });
+        const updated = updateScssEntry(source, frameworkEntry, paths.scss, scssPath, name);
+        if (updated) {
+          planned.push({ type: "update", path: frameworkEntry });
+          integrationPreviewFiles.push({ path: frameworkEntry, content: updated });
+        }
+      } catch (err) {
+        warnings.push(`Could not preview SCSS registration in ${frameworkEntry}: ${(err as Error).message}`);
+      }
+
+      if (jsPath) {
+        const mainJsEntry = path.posix.join(paths.js, "main.js");
+        try {
+          const source = safeReadFile(root, mainJsEntry, { maxSize: this.ctx.config.maxFileSize });
+          let importPath = path.posix.relative(path.posix.dirname(mainJsEntry), jsPath);
+          if (!importPath.startsWith(".")) importPath = `./${importPath}`;
+          const update = updateThicketMainJs(source, componentInitFunction(name), importPath);
+          if (update.source && update.source !== source) {
+            planned.push({ type: "update", path: mainJsEntry });
+            integrationPreviewFiles.push({ path: mainJsEntry, content: update.source });
+          } else if (update.warning) {
+            warnings.push(`${update.warning} Register ${componentInitFunction(name)} manually in ${mainJsEntry}.`);
+          }
+        } catch (err) {
+          warnings.push(
+            `Could not preview JavaScript registration in ${mainJsEntry}: ${(err as Error).message}`,
+          );
+        }
+      }
+    }
+
+    // Check collisions
     for (const p of planned) {
-      if (safeExists(root, p.path)) {
+      if (p.type === "create" && safeExists(root, p.path)) {
         warnings.push(`File already exists and will be overwritten: ${p.path}`);
       }
     }
 
     if (dryRun) {
       const previewFiles = [
-        { path: liquidPath, content: defaultLiquidTemplate(name, variants) },
-        { path: scssPath, content: defaultScssTemplate(name, variants) },
+        { path: liquidPath, content: defaultLiquidTemplate(name, variants, classBase) },
+        { path: scssPath, content: defaultScssTemplate(name, variants, classBase) },
       ];
 
       if (docsPath) {
@@ -519,9 +631,10 @@ export class ComponentService {
       if (jsPath) {
         previewFiles.push({
           path: jsPath,
-          content: `// Component: ${name}\nexport function init${name.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase())}() {\n  // TODO\n}\n`,
+          content: `// Component: ${name}\nexport function ${componentInitFunction(name)}() {\n  // TODO\n}\n`,
         });
       }
+      previewFiles.push(...integrationPreviewFiles);
 
       const diffs = previewFiles.map((entry) => ({
         path: entry.path,
@@ -547,7 +660,7 @@ export class ComponentService {
       const liquidResult = safeWriteFile(
         root,
         liquidPath,
-        defaultLiquidTemplate(name, variants),
+        defaultLiquidTemplate(name, variants, classBase),
         { maxSize: this.ctx.config.maxFileSize },
       );
       if (liquidResult.created) filesCreated.push(liquidResult.path);
@@ -556,7 +669,7 @@ export class ComponentService {
       const scssResult = safeWriteFile(
         root,
         scssPath,
-        defaultScssTemplate(name, variants),
+        defaultScssTemplate(name, variants, classBase),
         { maxSize: this.ctx.config.maxFileSize },
       );
       if (scssResult.created) filesCreated.push(scssResult.path);
@@ -585,7 +698,7 @@ export class ComponentService {
         const r = safeWriteFile(
           root,
           jsPath,
-          `// Component: ${name}\nexport function init${name.replace(/(^|-)(\w)/g, (_, __, c: string) => c.toUpperCase())}() {\n  // TODO\n}\n`,
+          `// Component: ${name}\nexport function ${componentInitFunction(name)}() {\n  // TODO\n}\n`,
           { maxSize: this.ctx.config.maxFileSize },
         );
         if (r.created) filesCreated.push(r.path);
@@ -593,7 +706,10 @@ export class ComponentService {
       }
 
       // Try to register SCSS import in common entry points
-      this.ensureScssImport(name, scssPath, warnings);
+      this.ensureScssImport(name, scssPath, warnings, filesModified);
+      if (thicketProject && jsPath) {
+        this.ensureThicketJavascriptRegistration(name, jsPath, warnings, filesModified);
+      }
 
       this.ctx.invalidateCache();
       logger.info("component_create", { name, filesCreated });
@@ -619,10 +735,16 @@ export class ComponentService {
     }
   }
 
-  private ensureScssImport(name: string, scssPath: string, warnings: string[]): void {
+  private ensureScssImport(
+    name: string,
+    scssPath: string,
+    warnings: string[],
+    filesModified: string[],
+  ): void {
     const root = this.ctx.config.root;
     const paths = this.ctx.config.paths;
     const candidates = [
+      path.posix.join(paths.scss, "_framework.scss"),
       path.posix.join(paths.scss, "components", "_index.scss"),
       path.posix.join(paths.scss, "_components.scss"),
       path.posix.join(paths.scss, "main.scss"),
@@ -636,21 +758,13 @@ export class ComponentService {
       if (!safeExists(root, entry)) continue;
       try {
         const source = safeReadFile(root, entry, { maxSize: this.ctx.config.maxFileSize });
-        const found = findImportForComponent(source, name);
-        if (found.present) {
+        const next = updateScssEntry(source, entry, paths.scss, scssPath, name);
+        if (!next) {
           logger.debug("SCSS import already present", { entry, name });
           return;
         }
-        // Prefer @use with relative path from entry
-        const entryDir = path.posix.dirname(entry);
-        let importPath = path.posix.relative(entryDir, scssPath).replace(/\.scss$/, "");
-        if (!importPath.startsWith(".")) importPath = `./${importPath}`;
-        // Strip leading underscore for Sass convention
-        importPath = importPath.replace(/\/_([^/]+)$/, "/$1");
-
-        const line = `@use "${importPath}";\n`;
-        const next = source.endsWith("\n") ? source + line : source + "\n" + line;
-        safeWriteFile(root, entry, next, { maxSize: this.ctx.config.maxFileSize });
+        const result = safeWriteFile(root, entry, next, { maxSize: this.ctx.config.maxFileSize });
+        if (result.modified) filesModified.push(result.path);
         warnings.push(`Added SCSS import to ${entry}`);
         return;
       } catch (err) {
@@ -660,6 +774,42 @@ export class ComponentService {
     warnings.push(
       "No SCSS entry point found to register the component import. Add the import manually.",
     );
+  }
+
+  private ensureThicketJavascriptRegistration(
+    name: string,
+    jsPath: string,
+    warnings: string[],
+    filesModified: string[],
+  ): void {
+    const root = this.ctx.config.root;
+    const paths = this.ctx.config.paths;
+    const entry = path.posix.join(paths.js, "main.js");
+    if (!safeExists(root, entry)) {
+      warnings.push(`Could not find ${entry} to register the JavaScript component.`);
+      return;
+    }
+
+    try {
+      const source = safeReadFile(root, entry, { maxSize: this.ctx.config.maxFileSize });
+      const initFunction = componentInitFunction(name);
+      let importPath = path.posix.relative(path.posix.dirname(entry), jsPath);
+      if (!importPath.startsWith(".")) importPath = `./${importPath}`;
+      const update = updateThicketMainJs(source, initFunction, importPath);
+      if (!update.source) {
+        warnings.push(`${update.warning} Register ${initFunction} manually in ${entry}.`);
+        return;
+      }
+      const next = update.source;
+      if (next !== source) {
+        const result = safeWriteFile(root, entry, next, { maxSize: this.ctx.config.maxFileSize });
+        if (result.modified) filesModified.push(result.path);
+      }
+    } catch (err) {
+      warnings.push(
+        `Could not register the JavaScript component in ${entry}: ${(err as Error).message}`,
+      );
+    }
   }
 
   preview(name: string, input: PreviewInput = {}): PreviewResult {
@@ -683,16 +833,22 @@ export class ComponentService {
       input.variant && detail.variants.includes(input.variant)
         ? input.variant
         : detail.variants[0] ?? "default";
+    const classBase = detail.classNames.some(
+      (className) =>
+        className === `c-${detail.name}` || className.startsWith(`c-${detail.name}--`),
+    )
+      ? `c-${detail.name}`
+      : detail.name;
     const rawParams = input.params ?? {};
     const params = {
       label: rawParams.label ?? "Example",
       variant,
       class: rawParams.class ?? "",
       id: rawParams.id ?? "",
-      content: rawParams.content ?? `<span class="${detail.name}__content">Preview content</span>`,
+      content: rawParams.content ?? `<span class="${classBase}__content">Preview content</span>`,
     } as Record<string, string | number | boolean | null | undefined>;
 
-    const classNames = [detail.name, `${detail.name}--${variant}`];
+    const classNames = [classBase, `${classBase}--${variant}`];
     const extraClass = typeof params.class === "string" ? params.class.trim() : "";
     if (extraClass) classNames.push(extraClass);
 
@@ -702,7 +858,7 @@ export class ComponentService {
 
     const html = `
 <div class="${classNames.join(" ")}"${renderedId}>
-  <span class="${detail.name}__label">${escapedLabel}</span>
+      <span class="${classBase}__label">${escapedLabel}</span>
   ${contentMarkup}
 </div>
 `.trim();
@@ -764,13 +920,13 @@ export class ComponentService {
       }
       if (
         detail.scssSource &&
-        !new RegExp(`\\.${normalized}(?:__[-\\w]+|--[-\\w]+)?\\s*(?:\\{|:)`).test(
+        !new RegExp(`\\.(?:c-)?${normalized}(?:__[-\\w]+|--[-\\w]+)?\\s*(?:\\{|:)`).test(
           detail.scssSource,
         )
       ) {
         warnings.push({
           file: detail.scss,
-          message: `SCSS should define a BEM selector beginning with .${normalized}`,
+          message: `SCSS should define a BEM selector beginning with .${normalized} or .c-${normalized}`,
         });
       }
     }

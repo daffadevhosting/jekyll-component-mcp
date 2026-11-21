@@ -1,6 +1,6 @@
 title: jekyll-component-mcp
 description: An MCP server that helps AI agents explore, create, validate, and document reusable Jekyll components.
-url: "https://jekyll-mcp.pages.dev"
+url: "https://jekyll-component-mcp.pages.dev"
 baseurl: ""
 lang: en
 markdown: kramdown

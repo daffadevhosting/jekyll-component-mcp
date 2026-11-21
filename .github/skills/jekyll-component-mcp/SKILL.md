@@ -1,6 +1,6 @@
 ---
 name: jekyll-component-mcp
-description: Install, configure, and use the jekyll-component-mcp MCP server with Jekyll projects. Use when setting up the server or inspecting, creating, validating, documenting, or building reusable Jekyll Liquid/SCSS components.
+description: Install, configure, and use the jekyll-component-mcp MCP server with Jekyll projects, including Thicket UI projects. Use when setting up the server or inspecting, creating, validating, documenting, or building reusable Jekyll Liquid/SCSS components.
 ---
 
 # Jekyll Component MCP
@@ -58,6 +58,40 @@ Use `--root <path>` to target another project, `--preset auto|standard|chirpy|mi
 4. Match the repository's existing component, naming, Liquid, SCSS, and documentation conventions. Do not assume default paths when scan results are available.
 5. For requested writes, use the smallest relevant tool. For `jekyll_component_create`, `dry_run: true` returns planned operations and unified diffs; review them before applying. For `jekyll_docs_update`, dry-run reports only the target path, not a content diff, and a normal update regenerates the target file. Clearly report when the configured write mode prevents a change.
 6. After changes, run `jekyll_component_validate` for a component and/or `jekyll_validate`. If the project has the needed Ruby/Jekyll environment, run `jekyll_build` to verify the site.
+
+## Thicket UI compatibility
+
+The server recognizes a Thicket-style project when the configured SCSS root
+contains both `_framework.scss` and `_tokens.scss`. Confirm the project layout
+with `jekyll_project_scan` and the configured paths before relying on this
+behavior; a Jekyll site with a different Sass architecture should retain its
+own conventions.
+
+For a recognized project, `jekyll_component_create`:
+
+- Keeps the include filename based on the requested component name, but uses
+  Thicket's `c-` BEM class prefix in generated Liquid and SCSS (for example,
+  `alert` produces `.c-alert`).
+- Registers the SCSS partial with `@use "components/<name>";` in
+  `assets/scss/_framework.scss` (or the configured SCSS root's framework file).
+- When `javascript: true` is requested, creates a JavaScript initializer and
+  attempts to add its import and call to the existing `assets/js/main.js`
+  `DOMContentLoaded` callback. This is an opt-in scaffold: the generated
+  initializer contains a TODO and does not implement component behavior.
+- Includes framework-entry-point updates in `dry_run: true` operations/diffs
+  when those files can be read. Review the diffs before applying changes.
+
+If the JavaScript entry point or expected callback is missing or differs from
+the supported pattern, creation reports a warning; inspect the file and
+register the initializer manually rather than forcing an edit. The validator
+accepts either `.name` or `.c-name` as the component's BEM root. Preview
+recognizes the `c-` prefix from existing Liquid classes.
+
+This compatibility does not mean every Thicket component API can be inferred
+or reproduced automatically. Before changing an existing component, inspect
+its Liquid include and docs, preserve its documented parameters and semantics,
+and use the existing component source as authority. Never replace framework
+entry points, theme tokens, or global JavaScript initialization wholesale.
 
 ## Tool reference
 

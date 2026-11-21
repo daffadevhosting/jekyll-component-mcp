@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.3.0
+
+### Added
+
+- Thicket-aware component class naming and SCSS entry-point registration
+- Opt-in Thicket JavaScript module registration in `assets/js/main.js`
+- Dry-run diffs for Thicket SCSS and JavaScript entry-point updates
+
+### Changed
+
+- Component validation and previews recognize Thicket's `c-` BEM prefix
+
 ## 1.2.2
 
 ### Changed
