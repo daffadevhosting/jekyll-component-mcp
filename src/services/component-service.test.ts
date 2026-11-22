@@ -320,4 +320,233 @@ describe("component inspection and validation", () => {
       "initToastAlert",
     );
   });
+
+  it("updates only explicitly supplied existing component sources", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '<div class="notice">Old</div>\n',
+    );
+    const service = createService(root);
+
+    const preview = service.update({
+      name: "notice",
+      liquid: '<div class="notice">New</div>\n',
+      dry_run: true,
+    });
+    expect(preview.operations).toEqual([{ type: "update", path: "_includes/components/notice.html" }]);
+    expect(preview.diff).toContain("-<div class=\"notice\">Old</div>");
+    expect(
+      fs.readFileSync(path.join(root, "_includes", "components", "notice.html"), "utf8"),
+    ).toContain("Old");
+
+    const result = service.update({
+      name: "notice",
+      liquid: '<div class="notice">New</div>\n',
+    });
+    expect(result.success).toBe(true);
+    expect(
+      fs.readFileSync(path.join(root, "_includes", "components", "notice.html"), "utf8"),
+    ).toContain("New");
+  });
+
+  it("duplicates component assets under a new name without modifying the source", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '<div class="notice notice--info">{{ include.message }}</div>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "components", "_notice.scss"),
+      ".notice { &--info { color: red; } }\n",
+    );
+    const service = createService(root);
+
+    const result = service.duplicate({ name: "notice", new_name: "banner" });
+
+    expect(result.success).toBe(true);
+    expect(
+      fs.readFileSync(path.join(root, "_includes", "components", "banner.html"), "utf8"),
+    ).toContain("banner banner--info");
+    expect(
+      fs.readFileSync(path.join(root, "_includes", "components", "notice.html"), "utf8"),
+    ).toContain("notice notice--info");
+  });
+
+  it("previews Sass and JavaScript registration when duplicating a Thicket component", () => {
+    const root = makeThicketProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "toast.html"),
+      '<div class="c-toast"></div>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "assets/scss/components", "_toast.scss"),
+      ".c-toast {}\n",
+    );
+    fs.writeFileSync(
+      path.join(root, "assets/js/components", "toast.js"),
+      "export function initToast() {}\n",
+    );
+    const service = createDefaultService(root);
+
+    const preview = service.duplicate({
+      name: "toast",
+      new_name: "notice",
+      dry_run: true,
+    });
+
+    expect(preview.operations).toEqual(
+      expect.arrayContaining([
+        { type: "update", path: "assets/scss/_framework.scss" },
+        { type: "update", path: "assets/js/main.js" },
+      ]),
+    );
+    expect(preview.diffs?.find((entry) => entry.path === "assets/scss/_framework.scss")?.diff).toContain(
+      '@use "components/notice";',
+    );
+    expect(
+      fs.readFileSync(path.join(root, "assets/scss", "_framework.scss"), "utf8"),
+    ).not.toContain("components/notice");
+    expect(fs.readFileSync(path.join(root, "assets/js", "main.js"), "utf8")).not.toContain(
+      "initNotice",
+    );
+  });
+
+  it("renames files and matching references only after confirmed full-write", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '<div class="notice notice--info">Hello</div>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "components", "_notice.scss"),
+      ".notice { &--info { color: red; } }\n",
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "main.scss"),
+      '@use "./components/notice";\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "page.html"),
+      '{% include components/notice.html %}\n',
+    );
+    fs.mkdirSync(path.join(root, "_layouts"), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, "_layouts", "default.html"),
+      '{% include components/notice.html %}\n',
+    );
+    const config = resolveConfig({ root });
+    config.paths.scss = "_sass";
+    config.paths.scssComponents = "_sass/components";
+    config.paths.docs = "_docs";
+    config.paths.docsComponents = "_docs/components";
+    config.writeMode = "full-write";
+    const service = new ComponentService(createContext(config));
+
+    const preview = service.rename({
+      name: "notice",
+      new_name: "banner",
+      dry_run: true,
+    });
+    expect(preview.operations).toEqual(
+      expect.arrayContaining([
+        { type: "create", path: "_includes/components/banner.html" },
+        { type: "delete", path: "_includes/components/notice.html" },
+        { type: "update", path: "page.html" },
+        { type: "update", path: "_layouts/default.html" },
+      ]),
+    );
+    expect(preview.diffs?.find((entry) => entry.path === "_layouts/default.html")?.diff).toContain(
+      "components/banner.html",
+    );
+    expect(fs.existsSync(path.join(root, "_includes", "components", "notice.html"))).toBe(true);
+
+    const result = service.rename({ name: "notice", new_name: "banner", confirm: true });
+    expect(result.success).toBe(true);
+    expect(fs.existsSync(path.join(root, "_includes", "components", "notice.html"))).toBe(false);
+    expect(
+      fs.readFileSync(path.join(root, "_includes", "components", "banner.html"), "utf8"),
+    ).toContain("banner banner--info");
+    expect(fs.readFileSync(path.join(root, "page.html"), "utf8")).toContain("components/banner.html");
+    expect(
+      fs.readFileSync(path.join(root, "_layouts", "default.html"), "utf8"),
+    ).toContain("components/banner.html");
+  });
+
+  it("reports component dependencies in both directions and exports source files", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '{% include components/icon.html %}\n<div class="notice"></div>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "icon.html"),
+      '<span class="icon"></span>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "banner.html"),
+      '{% include components/notice.html %}\n',
+    );
+    const service = createService(root);
+
+    expect(service.dependencies("notice")).toEqual({
+      component: "notice",
+      dependencies: [{ name: "icon", files: ["_includes/components/notice.html"] }],
+      dependents: [{ name: "banner", files: ["_includes/components/banner.html"] }],
+    });
+    const exported = service.export("notice");
+    expect(exported.success).toBe(true);
+    expect(exported.files).toContainEqual({
+      path: "_includes/components/notice.html",
+      content: '{% include components/icon.html %}\n<div class="notice"></div>\n',
+    });
+  });
+
+  it("runs component checks without a project build when requested", async () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '<div class="notice"></div>\n',
+    );
+    const service = createService(root);
+
+    const result = await service.test("notice", false);
+
+    expect(result.success).toBe(true);
+    expect(result.validation.component).toBe("notice");
+    expect(result.build).toBeUndefined();
+  });
+
+  it("previews component deletion together with its Sass import cleanup", () => {
+    const root = makeProject();
+    fs.writeFileSync(
+      path.join(root, "_includes", "components", "notice.html"),
+      '<div class="notice"></div>\n',
+    );
+    fs.writeFileSync(
+      path.join(root, "_sass", "components", "_notice.scss"),
+      ".notice {}\n",
+    );
+    fs.writeFileSync(path.join(root, "_sass", "main.scss"), '@use "./components/notice";\n');
+    const service = createService(root);
+
+    const blocked = service.delete("notice", true);
+    expect(blocked.success).toBe(false);
+    expect(blocked.error?.code).toBe("WRITE_MODE_DENIED");
+    expect(fs.existsSync(path.join(root, "_includes", "components", "notice.html"))).toBe(true);
+
+    const result = service.delete("notice", false, true);
+
+    expect(result.success).toBe(true);
+    expect(result.operations).toEqual(
+      expect.arrayContaining([
+        { type: "delete", path: "_includes/components/notice.html" },
+        { type: "delete", path: "_sass/components/_notice.scss" },
+        { type: "update", path: "_sass/main.scss" },
+      ]),
+    );
+    expect(result.diffs?.find((entry) => entry.path === "_includes/components/notice.html")?.diff)
+      .toContain("-<div class=\"notice\"></div>");
+    expect(fs.existsSync(path.join(root, "_sass", "components", "_notice.scss"))).toBe(true);
+  });
 });

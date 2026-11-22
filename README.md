@@ -118,10 +118,15 @@ Optional `.jekyll-mcp.json` in the project root:
 | `jekyll_component_list` | List components |
 | `jekyll_component_get` | Component details + sources |
 | `jekyll_component_create` | Create component + SCSS + docs |
+| `jekyll_component_update` | Replace selected component sources; preview diffs |
+| `jekyll_component_rename` / `jekyll_component_duplicate` | Rename references or copy a component bundle |
+| `jekyll_component_dependencies` / `jekyll_component_export` | Inspect component references or export its source bundle |
+| `jekyll_component_test` | Validate a component and optionally build the site |
 | `jekyll_component_validate` | Structured validation |
 | `list_components` / `inspect_component` | Aliases for component discovery and inspection |
 | `create_component` / `validate_component` | Aliases for generation and validation |
-| `jekyll_component_delete` | Destructive delete (full-write + confirm) |
+| `jekyll_component_delete` | Destructive delete (dry-run; full-write + confirm) |
+| `jekyll_scss_update` / `jekyll_scss_delete` | Update a stylesheet or delete it and clean direct Sass imports |
 | `jekyll_build` | Run Jekyll build |
 | `jekyll_doctor` | Run jekyll doctor |
 

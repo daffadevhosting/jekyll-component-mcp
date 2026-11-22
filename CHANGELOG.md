@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.5.0
+
+### Added
+
+- Dedicated component update, rename, duplicate, test, dependency graph, and JSON export tools
+- Dedicated SCSS update and delete tools; SCSS deletion previews and removes direct Sass imports
+- Dry-run diffs for component updates, rename/duplicate operations, and stylesheet lifecycle changes
+
+### Changed
+
+- Component deletion now supports dry-run and continues to require full-write mode plus confirmation
+
 ## 1.4.0
 
 ### Added
