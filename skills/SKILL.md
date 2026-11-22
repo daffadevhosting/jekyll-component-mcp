@@ -93,15 +93,43 @@ its Liquid include and docs, preserve its documented parameters and semantics,
 and use the existing component source as authority. Never replace framework
 entry points, theme tokens, or global JavaScript initialization wholesale.
 
+## Component and stylesheet lifecycle
+
+- Use `jekyll_component_update` to replace only the explicitly supplied
+  associated source files. It does not create missing files or infer content;
+  inspect with `jekyll_component_get`, then review its dry-run diffs.
+- Use `jekyll_component_rename` to rename the component's associated files and
+  matching references under configured source roots. It removes the old paths,
+  so inspect every dry-run operation/diff first; applying requires
+  `full-write` and `confirm: true`.
+- Use `jekyll_component_duplicate` to copy the component's existing associated
+  files under a new name. The source remains unchanged; dry-run shows the
+  duplicate files and any framework registration updates.
+- Use `jekyll_component_dependencies` for read-only component include, Sass,
+  and JavaScript references, including reverse dependents. It reports detected
+  static references, not runtime/dynamic dependencies.
+- Use `jekyll_component_export` for a read-only JSON bundle of the existing
+  component files. It does not create an archive or write into the project.
+- Use `jekyll_component_test` for static component validation plus a Jekyll
+  build by default. Set `run_build: false` to skip the site build. A successful
+  build is project-level integration evidence, not a component unit test.
+- Use `jekyll_scss_update` to replace an existing file under the configured
+  SCSS root; it does not create a missing file.
+- Use `jekyll_scss_delete` only for an explicitly requested stylesheet
+  deletion. Review its dry-run, which includes direct Sass import cleanup;
+  applying requires `full-write` and `confirm: true`.
+- `jekyll_component_delete` is also destructive: review `dry_run: true` before
+  deleting, then use `confirm: true` in `full-write` mode.
+
 ## Tool reference
 
 | Task | MCP tools |
 | --- | --- |
 | Project overview and structure | `jekyll_project_info`, `jekyll_project_scan`, `jekyll_config_get` |
-| Components | `jekyll_component_list`, `jekyll_component_get`, `jekyll_component_catalog`, `jekyll_component_create`, `jekyll_component_preview`, `jekyll_component_validate`, `jekyll_component_delete` |
+| Components | `jekyll_component_list`, `jekyll_component_get`, `jekyll_component_catalog`, `jekyll_component_create`, `jekyll_component_update`, `jekyll_component_rename`, `jekyll_component_duplicate`, `jekyll_component_preview`, `jekyll_component_validate`, `jekyll_component_test`, `jekyll_component_dependencies`, `jekyll_component_export`, `jekyll_component_delete` |
 | Component aliases | `list_components`, `inspect_component`, `create_component`, `validate_component` |
 | Catalog and preview aliases | `component_catalog`, `preview_component` |
-| SCSS and design tokens | `jekyll_scss_list`, `jekyll_scss_get`, `jekyll_scss_create`, `jekyll_token_list`, `jekyll_token_get`, `jekyll_token_update` |
+| SCSS and design tokens | `jekyll_scss_list`, `jekyll_scss_get`, `jekyll_scss_create`, `jekyll_scss_update`, `jekyll_scss_delete`, `jekyll_token_list`, `jekyll_token_get`, `jekyll_token_update` |
 | Liquid includes and layouts | `jekyll_include_list`, `jekyll_include_get`, `jekyll_layout_list`, `jekyll_layout_get` |
 | Documentation | `jekyll_docs_create`, `jekyll_docs_update` |
 | Validation and build | `jekyll_validate`, `jekyll_build`, `jekyll_doctor` |

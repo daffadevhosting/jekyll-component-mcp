@@ -3,6 +3,7 @@
  */
 
 import path from "node:path";
+import type { Dirent } from "node:fs";
 import type { ServerContext } from "../server/context.js";
 import { assertWriteAllowed } from "../server/context.js";
 import { normalizeComponentName } from "../security/validation.js";
@@ -11,11 +12,16 @@ import {
   safeReadFile,
   safeWriteFile,
   safeUnlink,
+  safeWalk,
+  safeReadDir,
 } from "../utils/filesystem.js";
 import { analyzeLiquid, checkLiquidSyntax } from "../parsers/liquid-parser.js";
 import { findImportForComponent } from "../parsers/scss-parser.js";
 import { ProjectService } from "./project-service.js";
+import { BuildService } from "./build-service.js";
+import { ScssService } from "./scss-service.js";
 import { logger } from "../utils/logger.js";
+import { createUnifiedDiff } from "../utils/diff.js";
 
 export interface ComponentDescriptor {
   name: string;
@@ -95,6 +101,53 @@ export interface ValidateResult {
   component: string;
   errors: Array<{ file?: string; message: string }>;
   warnings: Array<{ file?: string; message: string }>;
+}
+
+type ComponentFileKey = "liquid" | "scss" | "javascript" | "documentation" | "example";
+
+const COMPONENT_FILE_KEYS: ComponentFileKey[] = [
+  "liquid",
+  "scss",
+  "javascript",
+  "documentation",
+  "example",
+];
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function replaceComponentReferences(
+  source: string,
+  oldName: string,
+  newName: string,
+  replacePlainName = true,
+): string {
+  const oldClass = `c-${oldName}`;
+  const newClass = `c-${newName}`;
+  const oldInit = componentInitFunction(oldName);
+  const newInit = componentInitFunction(newName);
+  const classPattern = new RegExp(
+    `\\.${escapeRegExp(oldClass)}(?=__|--|[^a-zA-Z0-9_-]|$)`,
+    "g",
+  );
+  const legacyClassPattern = new RegExp(
+    `\\.${escapeRegExp(oldName)}(?=__|--|[^a-zA-Z0-9_-]|$)`,
+    "g",
+  );
+  const plainPattern = new RegExp(
+    `(^|[^a-zA-Z0-9])${escapeRegExp(oldName)}(?=$|[^a-zA-Z0-9])`,
+    "g",
+  );
+
+  let updated = source
+    .replace(classPattern, `.${newClass}`)
+    .replace(legacyClassPattern, `.${newName}`)
+    .replaceAll(`_${oldName}.scss`, `_${newName}.scss`)
+    .replaceAll(`components/${oldName}`, `components/${newName}`)
+    .replaceAll(oldInit, newInit);
+  if (replacePlainName) updated = updated.replace(plainPattern, `$1${newName}`);
+  return updated;
 }
 
 function isThicketProject(root: string, scssRoot: string): boolean {
@@ -344,21 +397,7 @@ function validateComponentSchema(input: {
 }
 
 function buildUnifiedDiff(relativePath: string, before: string, after: string): string {
-  const beforeLines = before === "" ? [""] : before.split(/\r?\n/);
-  const afterLines = after === "" ? [""] : after.split(/\r?\n/);
-
-  const header = [`--- ${relativePath}`, `+++ ${relativePath}`];
-  const lines = [...header, `@@ -0,0 +1,${afterLines.length} @@`];
-
-  for (const line of afterLines) {
-    lines.push(`+${line}`);
-  }
-
-  if (beforeLines.length > 0 && beforeLines.join("\n") !== afterLines.join("\n")) {
-    lines.push(`@@ -1,${beforeLines.length} +1,${afterLines.length} @@`);
-  }
-
-  return lines.join("\n");
+  return createUnifiedDiff(relativePath, before, after);
 }
 
 function escapeHtml(value: string): string {
@@ -372,9 +411,11 @@ function escapeHtml(value: string): string {
 
 export class ComponentService {
   private project: ProjectService;
+  private build: BuildService;
 
   constructor(private readonly ctx: ServerContext) {
     this.project = new ProjectService(ctx);
+    this.build = new BuildService(ctx);
   }
 
   list(): ComponentDescriptor[] {
@@ -572,37 +613,18 @@ export class ComponentService {
 
     const warnings: string[] = [];
     const integrationPreviewFiles: Array<{ path: string; content: string }> = [];
-    if (dryRun && thicketProject) {
-      const frameworkEntry = path.posix.join(paths.scss, "_framework.scss");
-      try {
-        const source = safeReadFile(root, frameworkEntry, { maxSize: this.ctx.config.maxFileSize });
-        const updated = updateScssEntry(source, frameworkEntry, paths.scss, scssPath, name);
-        if (updated) {
-          planned.push({ type: "update", path: frameworkEntry });
-          integrationPreviewFiles.push({ path: frameworkEntry, content: updated });
-        }
-      } catch (err) {
-        warnings.push(`Could not preview SCSS registration in ${frameworkEntry}: ${(err as Error).message}`);
+    if (dryRun) {
+      const scssRegistration = this.previewScssImport(name, scssPath, warnings);
+      if (scssRegistration) {
+        planned.push({ type: "update", path: scssRegistration.path });
+        integrationPreviewFiles.push(scssRegistration);
       }
-
-      if (jsPath) {
-        const mainJsEntry = path.posix.join(paths.js, "main.js");
-        try {
-          const source = safeReadFile(root, mainJsEntry, { maxSize: this.ctx.config.maxFileSize });
-          let importPath = path.posix.relative(path.posix.dirname(mainJsEntry), jsPath);
-          if (!importPath.startsWith(".")) importPath = `./${importPath}`;
-          const update = updateThicketMainJs(source, componentInitFunction(name), importPath);
-          if (update.source && update.source !== source) {
-            planned.push({ type: "update", path: mainJsEntry });
-            integrationPreviewFiles.push({ path: mainJsEntry, content: update.source });
-          } else if (update.warning) {
-            warnings.push(`${update.warning} Register ${componentInitFunction(name)} manually in ${mainJsEntry}.`);
-          }
-        } catch (err) {
-          warnings.push(
-            `Could not preview JavaScript registration in ${mainJsEntry}: ${(err as Error).message}`,
-          );
-        }
+    }
+    if (dryRun && thicketProject && jsPath) {
+      const jsRegistration = this.previewThicketJavascriptRegistration(name, jsPath, warnings);
+      if (jsRegistration) {
+        planned.push({ type: "update", path: jsRegistration.path });
+        integrationPreviewFiles.push(jsRegistration);
       }
     }
 
@@ -732,6 +754,622 @@ export class ComponentService {
           message: (err as Error).message,
         },
       };
+    }
+  }
+
+  update(input: {
+    name: string;
+    liquid?: string;
+    scss?: string;
+    javascript?: string;
+    documentation?: string;
+    example?: string;
+    dry_run?: boolean;
+  }): MutationResult {
+    const detail = this.get(input.name);
+    if (!detail) {
+      return {
+        success: false,
+        operation: "component_update",
+        error: { code: "NOT_FOUND", message: `Component not found: ${input.name}` },
+      };
+    }
+
+    const updates = COMPONENT_FILE_KEYS.flatMap((key) => {
+      const content = input[key];
+      const filePath = detail[key];
+      return content !== undefined && filePath ? [{ key, path: filePath, content }] : [];
+    });
+    const requestedKeys = COMPONENT_FILE_KEYS.filter((key) => input[key] !== undefined);
+    const missingKeys = requestedKeys.filter((key) => !detail[key]);
+    if (missingKeys.length > 0) {
+      return {
+        success: false,
+        operation: "component_update",
+        component: detail.name,
+        error: {
+          code: "FILE_NOT_FOUND",
+          message: `Component does not have associated files for: ${missingKeys.join(", ")}`,
+        },
+      };
+    }
+    if (updates.length === 0) {
+      return {
+        success: false,
+        operation: "component_update",
+        component: detail.name,
+        error: { code: "NO_CHANGES", message: "Provide at least one component file source to update." },
+      };
+    }
+
+    const root = this.ctx.config.root;
+    const diffs = updates.map(({ path: filePath, content }) => ({
+      path: filePath,
+      before: safeReadFile(root, filePath, { maxSize: this.ctx.config.maxFileSize }),
+      content,
+    }));
+    const changed = diffs.filter((item) => item.before !== item.content);
+    if (input.dry_run) {
+      return {
+        success: true,
+        operation: "component_update",
+        component: detail.name,
+        dry_run: true,
+        operations: changed.map(({ path: filePath }) => ({ type: "update", path: filePath })),
+        diffs: changed.map(({ path: filePath, before, content }) => ({
+          path: filePath,
+          diff: createUnifiedDiff(filePath, before, content),
+        })),
+        diff: changed
+          .map(({ path: filePath, before, content }) =>
+            createUnifiedDiff(filePath, before, content),
+          )
+          .filter(Boolean)
+          .join("\n\n"),
+      };
+    }
+
+    const filesModified: string[] = [];
+    try {
+      assertWriteAllowed(this.ctx, "update");
+      for (const { path: filePath, content } of changed) {
+        const result = safeWriteFile(root, filePath, content, {
+          maxSize: this.ctx.config.maxFileSize,
+        });
+        if (result.modified) filesModified.push(result.path);
+      }
+      this.ctx.invalidateCache();
+      return {
+        success: true,
+        operation: "component_update",
+        component: detail.name,
+        files_modified: filesModified,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        operation: "component_update",
+        component: detail.name,
+        error: {
+          code: (err as { code?: string }).code ?? "UPDATE_FAILED",
+          message: (err as Error).message,
+        },
+        files_modified: filesModified,
+      };
+    }
+  }
+
+  rename(input: {
+    name: string;
+    new_name: string;
+    confirm?: boolean;
+    dry_run?: boolean;
+  }): MutationResult {
+    const oldName = normalizeComponentName(input.name);
+    const newName = normalizeComponentName(input.new_name);
+    if (oldName === newName) {
+      return {
+        success: false,
+        operation: "component_rename",
+        error: { code: "INVALID_NAME", message: "The new name must differ from the current name." },
+      };
+    }
+    const detail = this.get(oldName);
+    if (!detail) {
+      return {
+        success: false,
+        operation: "component_rename",
+        error: { code: "NOT_FOUND", message: `Component not found: ${oldName}` },
+      };
+    }
+
+    const root = this.ctx.config.root;
+    const sources = COMPONENT_FILE_KEYS.flatMap((key) => {
+      const filePath = detail[key];
+      if (!filePath) return [];
+      const content = safeReadFile(root, filePath, { maxSize: this.ctx.config.maxFileSize });
+      const newPath = filePath.replace(
+        new RegExp(`${escapeRegExp(oldName)}(?=\\.[^./]+$)`),
+        newName,
+      );
+      return [{
+        oldPath: filePath,
+        newPath,
+        before: content,
+        content: replaceComponentReferences(content, oldName, newName),
+      }];
+    });
+    if (sources.some(({ oldPath, newPath }) => oldPath === newPath)) {
+      return {
+        success: false,
+        operation: "component_rename",
+        component: oldName,
+        error: { code: "INVALID_PATH", message: "Could not derive a new path for every component file." },
+      };
+    }
+    const collisions = sources.filter(({ oldPath, newPath }) => newPath !== oldPath && safeExists(root, newPath));
+    if (collisions.length > 0) {
+      return {
+        success: false,
+        operation: "component_rename",
+        component: oldName,
+        error: {
+          code: "TARGET_EXISTS",
+          message: `Rename target already exists: ${collisions.map((item) => item.newPath).join(", ")}`,
+        },
+      };
+    }
+
+    const sourcePaths = new Set(sources.map(({ oldPath }) => oldPath));
+    const referenceUpdates: Array<{ path: string; before: string; content: string }> = [];
+    const searchRoots = [
+      this.ctx.config.paths.includes,
+      this.ctx.config.paths.layouts,
+      this.ctx.config.paths.scss,
+      this.ctx.config.paths.js,
+      this.ctx.config.paths.docs,
+      this.ctx.config.paths.examples,
+      this.ctx.config.paths.posts,
+      "_pages",
+      "pages",
+    ];
+    const referencePaths = new Set<string>();
+    for (const directory of searchRoots) {
+      for (const entry of safeWalk(root, directory, {
+        maxDepth: this.ctx.config.maxScanDepth,
+        extensions: [".html", ".liquid", ".md", ".scss", ".sass", ".css", ".js", ".mjs", ".ts"],
+      })) {
+        if (!entry.isDirectory && !sourcePaths.has(entry.relativePath)) {
+          referencePaths.add(entry.relativePath);
+        }
+      }
+    }
+    for (const entry of safeReadDir(root, ".", { withFileTypes: true }) as Dirent[]) {
+      if (
+        entry.isFile() &&
+        [".html", ".liquid", ".md", ".scss", ".sass", ".css", ".js", ".mjs", ".ts"].includes(
+          path.posix.extname(entry.name).toLowerCase(),
+        )
+      ) {
+        referencePaths.add(entry.name);
+      }
+    }
+    for (const filePath of referencePaths) {
+      const before = safeReadFile(root, filePath, { maxSize: this.ctx.config.maxFileSize });
+      const content = replaceComponentReferences(before, oldName, newName, false);
+      if (content !== before) referenceUpdates.push({ path: filePath, before, content });
+    }
+
+    const operations = [
+      ...sources.flatMap(({ oldPath, newPath }) => [
+        { type: "create", path: newPath },
+        { type: "delete", path: oldPath },
+      ]),
+      ...referenceUpdates.map(({ path: filePath }) => ({ type: "update", path: filePath })),
+    ];
+    const diffs = [
+      ...sources.map(({ newPath, content }) => ({
+        path: newPath,
+        diff: createUnifiedDiff(newPath, "", content),
+      })),
+      ...sources.map(({ oldPath, before }) => ({
+        path: oldPath,
+        diff: createUnifiedDiff(oldPath, before, ""),
+      })),
+      ...referenceUpdates.map(({ path: filePath, before, content }) => ({
+        path: filePath,
+        diff: createUnifiedDiff(filePath, before, content),
+      })),
+    ];
+    if (input.dry_run) {
+      return {
+        success: true,
+        operation: "component_rename",
+        component: oldName,
+        dry_run: true,
+        operations,
+        diffs,
+        diff: diffs.map((entry) => entry.diff).filter(Boolean).join("\n\n"),
+      };
+    }
+    if (!input.confirm) {
+      return {
+        success: false,
+        operation: "component_rename",
+        component: oldName,
+        error: {
+          code: "CONFIRMATION_REQUIRED",
+          message: "Renaming moves and removes source files; pass confirm: true after reviewing a dry run.",
+        },
+      };
+    }
+
+    const filesCreated: string[] = [];
+    const filesModified: string[] = [];
+    try {
+      assertWriteAllowed(this.ctx, "destructive");
+      for (const { newPath, content } of sources) {
+        const result = safeWriteFile(root, newPath, content, {
+          maxSize: this.ctx.config.maxFileSize,
+          overwrite: false,
+        });
+        if (result.created) filesCreated.push(result.path);
+      }
+      for (const { path: filePath, content } of referenceUpdates) {
+        const result = safeWriteFile(root, filePath, content, {
+          maxSize: this.ctx.config.maxFileSize,
+        });
+        if (result.modified) filesModified.push(result.path);
+      }
+      for (const { oldPath } of sources) {
+        safeUnlink(root, oldPath);
+        filesModified.push(oldPath);
+      }
+      this.ctx.invalidateCache();
+      return {
+        success: true,
+        operation: "component_rename",
+        component: newName,
+        files_created: filesCreated,
+        files_modified: filesModified,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        operation: "component_rename",
+        component: oldName,
+        error: {
+          code: (err as { code?: string }).code ?? "RENAME_FAILED",
+          message: (err as Error).message,
+        },
+        files_created: filesCreated,
+        files_modified: filesModified,
+      };
+    }
+  }
+
+  duplicate(input: { name: string; new_name: string; dry_run?: boolean }): MutationResult {
+    const sourceName = normalizeComponentName(input.name);
+    const newName = normalizeComponentName(input.new_name);
+    if (sourceName === newName) {
+      return {
+        success: false,
+        operation: "component_duplicate",
+        error: { code: "INVALID_NAME", message: "The duplicate name must differ from the source name." },
+      };
+    }
+    const detail = this.get(sourceName);
+    if (!detail) {
+      return {
+        success: false,
+        operation: "component_duplicate",
+        error: { code: "NOT_FOUND", message: `Component not found: ${sourceName}` },
+      };
+    }
+    const root = this.ctx.config.root;
+    const files = COMPONENT_FILE_KEYS.flatMap((key) => {
+      const filePath = detail[key];
+      if (!filePath) return [];
+      const newPath = filePath.replace(
+        new RegExp(`${escapeRegExp(sourceName)}(?=\\.[^./]+$)`),
+        newName,
+      );
+      return [{
+        sourcePath: filePath,
+        path: newPath,
+        content: replaceComponentReferences(
+          safeReadFile(root, filePath, { maxSize: this.ctx.config.maxFileSize }),
+          sourceName,
+          newName,
+        ),
+      }];
+    });
+    const collisions = files.filter(({ path: filePath }) => safeExists(root, filePath));
+    if (collisions.length > 0) {
+      return {
+        success: false,
+        operation: "component_duplicate",
+        component: sourceName,
+        error: {
+          code: "TARGET_EXISTS",
+          message: `Duplicate target already exists: ${collisions.map((item) => item.path).join(", ")}`,
+        },
+      };
+    }
+    const warnings: string[] = [];
+    const integrationFiles: Array<{ path: string; content: string; before: string }> = [];
+    const scssFilePath = files.find((file) => file.sourcePath === detail.scss)?.path;
+    if (input.dry_run && scssFilePath) {
+      const registration = this.previewScssImport(newName, scssFilePath, warnings);
+      if (registration) {
+        integrationFiles.push({
+          ...registration,
+          before: safeReadFile(root, registration.path, { maxSize: this.ctx.config.maxFileSize }),
+        });
+      }
+    }
+    const jsFilePath = files.find((file) => file.sourcePath === detail.javascript)?.path;
+    if (
+      input.dry_run &&
+      jsFilePath &&
+      isThicketProject(root, this.ctx.config.paths.scss)
+    ) {
+      const registration = this.previewThicketJavascriptRegistration(newName, jsFilePath, warnings);
+      if (registration) {
+        integrationFiles.push({
+          ...registration,
+          before: safeReadFile(root, registration.path, { maxSize: this.ctx.config.maxFileSize }),
+        });
+      }
+    }
+    const diffs = [
+      ...files.map(({ path: filePath, content }) => ({
+        path: filePath,
+        diff: createUnifiedDiff(filePath, "", content),
+      })),
+      ...integrationFiles.map(({ path: filePath, before, content }) => ({
+        path: filePath,
+        diff: createUnifiedDiff(filePath, before, content),
+      })),
+    ];
+    const operations = [
+      ...files.map(({ path: filePath }) => ({ type: "create", path: filePath })),
+      ...integrationFiles.map(({ path: filePath }) => ({ type: "update", path: filePath })),
+    ];
+    if (input.dry_run) {
+      return {
+        success: true,
+        operation: "component_duplicate",
+        component: newName,
+        dry_run: true,
+        operations,
+        diffs,
+        diff: diffs.map((entry) => entry.diff).filter(Boolean).join("\n\n"),
+        warnings,
+      };
+    }
+
+    const filesCreated: string[] = [];
+    const filesModified: string[] = [];
+    try {
+      assertWriteAllowed(this.ctx, "create");
+      for (const file of files) {
+        const result = safeWriteFile(root, file.path, file.content, {
+          maxSize: this.ctx.config.maxFileSize,
+          overwrite: false,
+        });
+        if (result.created) filesCreated.push(result.path);
+      }
+      const scssFile = files.find((file) => file.path === detail.scss?.replace(
+        new RegExp(`${escapeRegExp(sourceName)}(?=\\.[^./]+$)`),
+        newName,
+      ));
+      if (scssFile) this.ensureScssImport(newName, scssFile.path, warnings, filesModified);
+      if (detail.javascript && isThicketProject(root, this.ctx.config.paths.scss)) {
+        const jsFile = files.find((file) => file.sourcePath === detail.javascript);
+        if (jsFile) {
+          this.ensureThicketJavascriptRegistration(newName, jsFile.path, warnings, filesModified);
+        }
+      }
+      this.ctx.invalidateCache();
+      return {
+        success: true,
+        operation: "component_duplicate",
+        component: newName,
+        files_created: filesCreated,
+        files_modified: filesModified,
+        warnings,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        operation: "component_duplicate",
+        component: newName,
+        error: {
+          code: (err as { code?: string }).code ?? "DUPLICATE_FAILED",
+          message: (err as Error).message,
+        },
+        files_created: filesCreated,
+        files_modified: filesModified,
+        warnings,
+      };
+    }
+  }
+
+  async test(name: string, runBuild = true): Promise<{
+    success: boolean;
+    component: string;
+    validation: ValidateResult;
+    build?: Awaited<ReturnType<BuildService["build"]>>;
+  }> {
+    const validation = this.validate(name);
+    if (!validation.valid) {
+      return { success: false, component: validation.component, validation };
+    }
+    const build = runBuild ? await this.build.build() : undefined;
+    return {
+      success: validation.valid && (build?.success ?? true),
+      component: validation.component,
+      validation,
+      ...(build ? { build } : {}),
+    };
+  }
+
+  dependencies(name: string): {
+    component: string;
+    dependencies: Array<{ name: string; files: string[] }>;
+    dependents: Array<{ name: string; files: string[] }>;
+  } | null {
+    const target = normalizeComponentName(name);
+    const components = this.list();
+    const targetDetail = this.get(target);
+    if (!targetDetail) return null;
+
+    const referencesByComponent = new Map<string, Map<string, string[]>>();
+    for (const component of components) {
+      const detail = this.get(component.name);
+      if (!detail) continue;
+      const referenced = new Map<string, string[]>();
+      for (const key of COMPONENT_FILE_KEYS) {
+        const filePath = detail[key];
+        const source = detail[`${key}Source` as keyof ComponentDetail];
+        if (!filePath || typeof source !== "string") continue;
+        const patterns = [
+          /\{%\s*include\s+components\/([a-z0-9-]+)\.html\b/gi,
+          /@(?:use|forward|import)\s+["'][^"']*components\/([a-z0-9-]+)/gi,
+          /from\s+["'][^"']*components\/([a-z0-9-]+)(?:\.js)?["']/gi,
+        ];
+        for (const pattern of patterns) {
+          let match: RegExpExecArray | null;
+          while ((match = pattern.exec(source)) !== null) {
+            const dependency = match[1]!;
+            if (dependency === component.name) continue;
+            const paths = referenced.get(dependency) ?? [];
+            if (!paths.includes(filePath)) paths.push(filePath);
+            referenced.set(dependency, paths);
+          }
+        }
+      }
+      referencesByComponent.set(component.name, referenced);
+    }
+
+    const dependencies = [...(referencesByComponent.get(target) ?? new Map()).entries()]
+      .map(([dependencyName, files]) => ({ name: dependencyName, files }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    const dependents = [...referencesByComponent.entries()]
+      .flatMap(([componentName, references]) => {
+        const files = references.get(target);
+        return files ? [{ name: componentName, files }] : [];
+      })
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return { component: target, dependencies, dependents };
+  }
+
+  export(name: string): {
+    success: boolean;
+    format: "jekyll-component-mcp/component-export@1";
+    component: string;
+    files: Array<{ path: string; content: string }>;
+    error?: { code: string; message: string };
+  } {
+    const detail = this.get(name);
+    if (!detail) {
+      return {
+        success: false,
+        format: "jekyll-component-mcp/component-export@1",
+        component: normalizeComponentName(name),
+        files: [],
+        error: { code: "NOT_FOUND", message: `Component not found: ${name}` },
+      };
+    }
+    const files = COMPONENT_FILE_KEYS.flatMap((key) => {
+      const filePath = detail[key];
+      if (!filePath) return [];
+      return [{
+        path: filePath,
+        content: safeReadFile(this.ctx.config.root, filePath, {
+          maxSize: this.ctx.config.maxFileSize,
+        }),
+      }];
+    });
+    const totalBytes = files.reduce((total, file) => total + Buffer.byteLength(file.content), 0);
+    if (totalBytes > this.ctx.config.maxFileSize) {
+      return {
+        success: false,
+        format: "jekyll-component-mcp/component-export@1",
+        component: detail.name,
+        files: [],
+        error: {
+          code: "EXPORT_TOO_LARGE",
+          message: `Component export exceeds the configured maximum size of ${this.ctx.config.maxFileSize} bytes.`,
+        },
+      };
+    }
+    return {
+      success: true,
+      format: "jekyll-component-mcp/component-export@1",
+      component: detail.name,
+      files,
+    };
+  }
+
+  private previewScssImport(
+    name: string,
+    scssPath: string,
+    warnings: string[],
+  ): { path: string; content: string } | null {
+    const root = this.ctx.config.root;
+    const scssRoot = this.ctx.config.paths.scss;
+    const candidates = [
+      path.posix.join(scssRoot, "_framework.scss"),
+      path.posix.join(scssRoot, "components", "_index.scss"),
+      path.posix.join(scssRoot, "_components.scss"),
+      path.posix.join(scssRoot, "main.scss"),
+      path.posix.join(scssRoot, "app.scss"),
+      path.posix.join(scssRoot, "style.scss"),
+      path.posix.join(scssRoot, "styles.scss"),
+      path.posix.join(scssRoot, "index.scss"),
+    ];
+    for (const entry of candidates) {
+      if (!safeExists(root, entry)) continue;
+      try {
+        const source = safeReadFile(root, entry, { maxSize: this.ctx.config.maxFileSize });
+        const content = updateScssEntry(source, entry, scssRoot, scssPath, name);
+        return content ? { path: entry, content } : null;
+      } catch (err) {
+        warnings.push(`Could not preview SCSS registration in ${entry}: ${(err as Error).message}`);
+        return null;
+      }
+    }
+    warnings.push("No SCSS entry point found to register the component import.");
+    return null;
+  }
+
+  private previewThicketJavascriptRegistration(
+    name: string,
+    jsPath: string,
+    warnings: string[],
+  ): { path: string; content: string } | null {
+    const root = this.ctx.config.root;
+    const entry = path.posix.join(this.ctx.config.paths.js, "main.js");
+    if (!safeExists(root, entry)) {
+      warnings.push(`Could not find ${entry} to register the JavaScript component.`);
+      return null;
+    }
+    try {
+      const source = safeReadFile(root, entry, { maxSize: this.ctx.config.maxFileSize });
+      let importPath = path.posix.relative(path.posix.dirname(entry), jsPath);
+      if (!importPath.startsWith(".")) importPath = `./${importPath}`;
+      const update = updateThicketMainJs(source, componentInitFunction(name), importPath);
+      if (!update.source) {
+        warnings.push(`${update.warning} Register ${componentInitFunction(name)} manually in ${entry}.`);
+        return null;
+      }
+      return update.source === source ? null : { path: entry, content: update.source };
+    } catch (err) {
+      warnings.push(`Could not preview JavaScript registration in ${entry}: ${(err as Error).message}`);
+      return null;
     }
   }
 
@@ -912,6 +1550,9 @@ export class ComponentService {
       warnings.push({ message: "No associated SCSS file detected" });
     } else {
       const expectedFilename = `_${normalized}.scss`;
+      const expectedClass = normalized.startsWith("c-")
+        ? escapeRegExp(normalized)
+        : `(?:c-)?${escapeRegExp(normalized)}`;
       if (path.posix.basename(detail.scss) !== expectedFilename) {
         warnings.push({
           file: detail.scss,
@@ -920,13 +1561,13 @@ export class ComponentService {
       }
       if (
         detail.scssSource &&
-        !new RegExp(`\\.(?:c-)?${normalized}(?:__[-\\w]+|--[-\\w]+)?\\s*(?:\\{|:)`).test(
+        !new RegExp(`\\.${expectedClass}(?:__[-\\w]+|--[-\\w]+)?\\s*(?:\\{|:)`).test(
           detail.scssSource,
         )
       ) {
         warnings.push({
           file: detail.scss,
-          message: `SCSS should define a BEM selector beginning with .${normalized} or .c-${normalized}`,
+          message: `SCSS should define a BEM selector beginning with .${normalized} or .c-${normalized.replace(/^c-/, "")}`,
         });
       }
     }
@@ -943,27 +1584,14 @@ export class ComponentService {
     };
   }
 
-  delete(name: string, confirm: boolean): MutationResult {
-    if (!confirm) {
+  delete(name: string, confirm: boolean, dryRun = false): MutationResult {
+    if (!confirm && !dryRun) {
       return {
         success: false,
         operation: "component_delete",
         error: {
           code: "CONFIRMATION_REQUIRED",
           message: "Destructive delete requires confirm: true",
-        },
-      };
-    }
-
-    try {
-      assertWriteAllowed(this.ctx, "destructive");
-    } catch (err) {
-      return {
-        success: false,
-        operation: "component_delete",
-        error: {
-          code: (err as { code?: string }).code ?? "WRITE_MODE_DENIED",
-          message: (err as Error).message,
         },
       };
     }
@@ -979,21 +1607,99 @@ export class ComponentService {
     }
 
     const root = this.ctx.config.root;
-    const deleted: string[] = [];
-    for (const key of ["liquid", "scss", "javascript", "documentation", "example"] as const) {
+    const componentFiles = COMPONENT_FILE_KEYS.flatMap((key) => {
       const p = detail[key];
-      if (p && safeExists(root, p)) {
-        safeUnlink(root, p);
-        deleted.push(p);
+      return p && safeExists(root, p) ? [p] : [];
+    });
+    if (dryRun) {
+      const scssDeletion = detail.scss
+        ? new ScssService(this.ctx).delete({ path: detail.scss, dry_run: true })
+        : null;
+      if (scssDeletion && !scssDeletion.success) {
+        return {
+          success: false,
+          operation: "component_delete",
+          component: normalized,
+          error: {
+            code: scssDeletion.error?.code ?? "SCSS_DELETE_FAILED",
+            message: scssDeletion.error?.message ?? "Could not preview component stylesheet deletion.",
+          },
+        };
       }
+      const diffs = [
+        ...componentFiles
+          .filter((filePath) => filePath !== detail.scss)
+          .map((filePath) => ({
+            path: filePath,
+            diff: createUnifiedDiff(
+              filePath,
+              safeReadFile(root, filePath, { maxSize: this.ctx.config.maxFileSize }),
+              "",
+            ),
+          })),
+        ...(scssDeletion?.diffs ?? []),
+      ];
+      return {
+        success: true,
+        operation: "component_delete",
+        component: normalized,
+        dry_run: true,
+        operations: [
+          ...componentFiles
+            .filter((filePath) => filePath !== detail.scss)
+            .map((filePath) => ({ type: "delete", path: filePath })),
+          ...(scssDeletion?.operations ?? []),
+        ],
+        diffs,
+        diff: diffs.map((entry) => entry.diff).filter(Boolean).join("\n\n"),
+      };
     }
 
-    this.ctx.invalidateCache();
-    return {
-      success: true,
-      operation: "component_delete",
-      component: normalized,
-      files_modified: deleted,
-    };
+    const filesModified: string[] = [];
+    try {
+      assertWriteAllowed(this.ctx, "destructive");
+      if (detail.scss) {
+        const scssDeletion = new ScssService(this.ctx).delete({
+          path: detail.scss,
+          confirm: true,
+        });
+        if (!scssDeletion.success) {
+          return {
+            success: false,
+            operation: "component_delete",
+            component: normalized,
+            error: {
+              code: scssDeletion.error?.code ?? "SCSS_DELETE_FAILED",
+              message: scssDeletion.error?.message ?? "Could not delete the component stylesheet.",
+            },
+            files_modified: scssDeletion.files_modified,
+          };
+        }
+        filesModified.push(...(scssDeletion.files_modified ?? []));
+      }
+      for (const filePath of componentFiles) {
+        if (filePath === detail.scss) continue;
+        safeUnlink(root, filePath);
+        filesModified.push(filePath);
+      }
+      this.ctx.invalidateCache();
+      return {
+        success: true,
+        operation: "component_delete",
+        component: normalized,
+        files_modified: filesModified,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        operation: "component_delete",
+        component: normalized,
+        error: {
+          code: (err as { code?: string }).code ?? "DELETE_FAILED",
+          message: (err as Error).message,
+        },
+        files_modified: filesModified,
+      };
+    }
   }
 }

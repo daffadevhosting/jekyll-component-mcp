@@ -190,6 +190,129 @@ export function createServer(ctx: ServerContext): McpServer {
   );
 
   server.registerTool(
+    "jekyll_component_update",
+    {
+      description:
+        "Replace source for one or more files already associated with a component (Liquid, SCSS, JavaScript, docs, example). This does not create missing files or rewrite unspecified files. Use jekyll_component_get first; dry_run returns full diffs.",
+      inputSchema: z.object({
+        name: z.string().describe("Existing component name"),
+        liquid: z.string().optional().describe("Replacement Liquid include source"),
+        scss: z.string().optional().describe("Replacement SCSS source"),
+        javascript: z.string().optional().describe("Replacement JavaScript source"),
+        documentation: z.string().optional().describe("Replacement Markdown documentation"),
+        example: z.string().optional().describe("Replacement example source"),
+        dry_run: z.boolean().optional().describe("Preview exact file updates without writing"),
+      }),
+    },
+    async (input) => {
+      try {
+        return textResult(componentService.update(input));
+      } catch (err) {
+        return errorResult("COMPONENT_UPDATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_rename",
+    {
+      description:
+        "Rename an existing component, its associated files, and matching references in project layouts/includes/pages/SCSS/JS/docs/examples. Always review dry_run diffs. Applying the rename deletes old paths and requires full-write mode plus confirm: true.",
+      inputSchema: z.object({
+        name: z.string().describe("Current component name"),
+        new_name: z.string().describe("New component name"),
+        confirm: z.boolean().optional().describe("Must be true to apply the destructive file move"),
+        dry_run: z.boolean().optional().describe("Preview all added, removed, and updated files"),
+      }),
+    },
+    async (input) => {
+      try {
+        return textResult(componentService.rename(input));
+      } catch (err) {
+        return errorResult("COMPONENT_RENAME_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_duplicate",
+    {
+      description:
+        "Copy all associated source files for a component under a new component name and rewrite component-specific references. It does not modify the source component. Supports dry_run.",
+      inputSchema: z.object({
+        name: z.string().describe("Existing source component name"),
+        new_name: z.string().describe("Name for the copied component"),
+        dry_run: z.boolean().optional().describe("Preview files and diffs without writing"),
+      }),
+    },
+    async (input) => {
+      try {
+        return textResult(componentService.duplicate(input));
+      } catch (err) {
+        return errorResult("COMPONENT_DUPLICATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_test",
+    {
+      description:
+        "Run focused static component validation and, by default, a Jekyll site build as an integration check. Set run_build false to run only the component checks. Does not modify source files.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name to test"),
+        run_build: z.boolean().optional().describe("Run a full Jekyll build (default true)"),
+      }),
+    },
+    async ({ name, run_build }) => {
+      try {
+        return textResult(await componentService.test(name, run_build !== false));
+      } catch (err) {
+        return errorResult("COMPONENT_TEST_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_dependencies",
+    {
+      description:
+        "Read component-to-component include, Sass-module, and JavaScript-import references. Returns both outgoing dependencies and components that depend on the requested component. Read-only and limited to configured project source roots.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name"),
+      }),
+    },
+    async ({ name }) => {
+      try {
+        const result = componentService.dependencies(name);
+        return result
+          ? textResult(result)
+          : errorResult("NOT_FOUND", `Component not found: ${name}`);
+      } catch (err) {
+        return errorResult("COMPONENT_DEPENDENCIES_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_component_export",
+    {
+      description:
+        "Return a portable JSON bundle containing all existing files associated with one component and their project-relative paths. Read-only; does not write an archive. Bundle size is limited by the configured maximum file size.",
+      inputSchema: z.object({
+        name: z.string().describe("Component name to export"),
+      }),
+    },
+    async ({ name }) => {
+      try {
+        return textResult(componentService.export(name));
+      } catch (err) {
+        return errorResult("COMPONENT_EXPORT_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
     "jekyll_component_preview",
     {
       description:
@@ -362,15 +485,16 @@ export function createServer(ctx: ServerContext): McpServer {
     "jekyll_component_delete",
     {
       description:
-        "Delete a component and its associated files (Liquid, SCSS, JS, docs, example). DESTRUCTIVE. Requires confirm: true and full-write mode. Prefer dry reasoning before calling.",
+        "Delete a component and its associated files (Liquid, SCSS, JS, docs, example). DESTRUCTIVE: review dry_run: true diffs first; applying requires confirm: true and full-write mode.",
       inputSchema: z.object({
         name: z.string(),
-        confirm: z.boolean().describe("Must be true to proceed"),
+        confirm: z.boolean().optional().describe("Must be true to apply deletion"),
+        dry_run: z.boolean().optional().describe("Preview associated files without deleting"),
       }),
     },
-    async ({ name, confirm }) => {
+    async ({ name, confirm, dry_run }) => {
       try {
-        return textResult(componentService.delete(name, confirm));
+        return textResult(componentService.delete(name, confirm === true, dry_run === true));
       } catch (err) {
         return errorResult("COMPONENT_DELETE_FAILED", (err as Error).message);
       }
@@ -433,6 +557,46 @@ export function createServer(ctx: ServerContext): McpServer {
         return textResult(scssService.create(input));
       } catch (err) {
         return errorResult("SCSS_CREATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_scss_update",
+    {
+      description:
+        "Replace the full contents of an existing SCSS/Sass/CSS file under the configured SCSS root. Does not create files. Use jekyll_scss_get first; dry_run returns the exact diff.",
+      inputSchema: z.object({
+        path: z.string().describe("Existing stylesheet path from jekyll_scss_list"),
+        content: z.string().describe("Complete replacement file contents"),
+        dry_run: z.boolean().optional().describe("Preview the change without writing"),
+      }),
+    },
+    async (input) => {
+      try {
+        return textResult(scssService.update(input));
+      } catch (err) {
+        return errorResult("SCSS_UPDATE_FAILED", (err as Error).message);
+      }
+    },
+  );
+
+  server.registerTool(
+    "jekyll_scss_delete",
+    {
+      description:
+        "Delete one SCSS/Sass/CSS file under the configured SCSS root and remove direct Sass imports that target it. DESTRUCTIVE: review dry_run, then pass confirm true; actual deletion requires full-write mode.",
+      inputSchema: z.object({
+        path: z.string().describe("Stylesheet path from jekyll_scss_list"),
+        confirm: z.boolean().optional().describe("Must be true to delete"),
+        dry_run: z.boolean().optional().describe("Preview the deletion and import updates"),
+      }),
+    },
+    async (input) => {
+      try {
+        return textResult(scssService.delete(input));
+      } catch (err) {
+        return errorResult("SCSS_DELETE_FAILED", (err as Error).message);
       }
     },
   );
