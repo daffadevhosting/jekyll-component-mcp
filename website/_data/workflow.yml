@@ -7,3 +7,6 @@
 - number: "03"
   title: Create with confidence
   description: Preview generated files, apply the change, and validate the component or site.
+- number: "04"
+  title: Maintain safely
+  description: Update or rename components and stylesheets with diffs, dependency checks, and full-write confirmation.

@@ -5,6 +5,7 @@ baseurl: ""
 lang: en
 markdown: kramdown
 permalink: pretty
+version: "1.5.0"
 github_url: https://github.com/daffadevhosting/jekyll-component-mcp
 npm_url: https://www.npmjs.com/package/jekyll-component-mcp
 thicket_css: https://unpkg.com/thicket-ui@1.4.5/dist/thicket.css

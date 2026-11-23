@@ -10,3 +10,7 @@
   eyebrow: Validate
   title: Keep quality in the loop
   description: Check Liquid patterns, styles, docs, accessibility hints, and parameter consistency. Build and doctor tools stay Jekyll-focused.
+- number: "04"
+  eyebrow: Maintain
+  title: Manage the component lifecycle
+  description: Update, rename, duplicate, test, export, and inspect dependencies with dry-run previews and gated destructive operations.

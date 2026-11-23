@@ -1,0 +1,108 @@
+---
+layout: default
+title: Changelog
+description: Release history for jekyll-component-mcp.
+permalink: /changelog/
+---
+
+<section class="changelog-section">
+  <div class="container">
+    <header class="changelog-header">
+      <p class="eyebrow"><span class="eyebrow-dot"></span> Release history</p>
+      <h1>Changelog.</h1>
+      <p>Latest changes and features in jekyll-component-mcp.</p>
+      <a class="text-link" href="{{ site.github_url }}/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">View CHANGELOG.md on GitHub <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <div class="changelog-list" aria-label="Release history">
+      <article class="release">
+        <div class="release-head">
+          <h2>1.5.0</h2>
+          <span class="release-badge">Latest</span>
+        </div>
+        <h3>Added</h3>
+        <ul>
+          <li>Dedicated component update, rename, duplicate, test, dependency graph, and JSON export tools</li>
+          <li>Dedicated SCSS update and delete tools; SCSS deletion previews and removes direct Sass imports</li>
+          <li>Dry-run diffs for component updates, rename/duplicate operations, and stylesheet lifecycle changes</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li>Component deletion now supports dry-run and continues to require full-write mode plus confirmation</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.4.0</h2></div>
+        <h3>Added</h3>
+        <ul>
+          <li>Thicket-aware component class naming and SCSS entry-point registration</li>
+          <li>Opt-in Thicket JavaScript module registration in <code>assets/js/main.js</code></li>
+          <li>Dry-run diffs for Thicket SCSS and JavaScript entry-point updates</li>
+        </ul>
+        <h3>Changed</h3>
+        <ul>
+          <li>Component validation and previews recognize Thicket's <code>c-</code> BEM prefix</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.2.2</h2></div>
+        <h3>Changed</h3>
+        <ul>
+          <li>Updated both distributed skill files for component catalog, HTML preview, documentation update behavior, and daily npm update notices</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.2.1</h2></div>
+        <h3>Changed</h3>
+        <ul>
+          <li>Improved <code>jekyll_docs_update</code> tool metadata with parameter descriptions and the supported <code>category</code> field</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.2.0</h2></div>
+        <h3>Added</h3>
+        <ul>
+          <li>Component catalog with categories, status, summaries, tags, variants, and parameters</li>
+          <li>Dry-run component creation previews with unified diffs and rendered HTML previews</li>
+          <li>Component schema validation and category metadata in generated documentation and catalog entries</li>
+          <li>Daily npm update checks with cached results to avoid repeated network requests and notifications</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.1.1</h2></div>
+        <h3>Added</h3>
+        <ul>
+          <li>Reusable header and footer components in the example Jekyll framework, with styles, documentation, and example pages</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.1.0</h2></div>
+        <h3>Added</h3>
+        <ul>
+          <li><code>jekyll-component-mcp init</code> with automatic Jekyll theme/path detection and standard, Chirpy, and Minimal Mistakes presets</li>
+          <li>Component tool aliases: <code>list_components</code>, <code>inspect_component</code>, <code>create_component</code>, and <code>validate_component</code></li>
+          <li>Liquid include fallback/guard and BEM/SCSS naming checks</li>
+          <li>Liquid documentation headers and safe defaults in generated components</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.0.0</h2></div>
+        <h3>Added</h3>
+        <ul>
+          <li>MCP server for Jekyll component development with stdio transport</li>
+          <li>Project, component, SCSS, design token, Liquid, documentation, validation, and build tools</li>
+          <li>Resources and prompts for project context and component reviews</li>
+          <li>Security through path sandboxing, command allowlists, write modes, and dry-runs</li>
+          <li>Example Jekyll Component Framework project under <code>examples/</code></li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
