@@ -1,6 +1,6 @@
 {
   "name": "jekyll-component-mcp",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "AI-native development MCP server for Jekyll projects and reusable Liquid/SCSS/JavaScript components.",
   "homepage": "https://jekyll-component-mcp.pages.dev",
   "repository": {
