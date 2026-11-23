@@ -98,7 +98,7 @@ function parseWriteMode(value: unknown): WriteMode | undefined {
  */
 export function resolveConfig(cli: CliOptions = {}): McpConfig {
   // Root resolution priority: CLI > env > config file (later) > cwd
-  let rootCandidate =
+  const rootCandidate =
     cli.root ??
     process.env.JEKYLL_PROJECT_ROOT ??
     process.env.JEKYLL_COMPONENT_MCP_ROOT ??

@@ -18,6 +18,7 @@ examples/components/    # Live example pages
 Requires Ruby + Bundler + Jekyll:
 
 ```bash
+bundle install
 bundle exec jekyll serve
 ```
 

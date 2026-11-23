@@ -11,3 +11,5 @@ coverage/
 .cache/
 tmp/
 .temp/
+examples/jekyll-component-framework/_site/
+examples/jekyll-component-framework/vendor/

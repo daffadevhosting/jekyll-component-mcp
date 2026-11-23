@@ -33,8 +33,30 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Lint
+        run: npm run lint
+
       - name: Run tests
         run: npm test
 
       - name: Build package
         run: npm run build
+
+  jekyll-example:
+    name: Build Jekyll example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: false
+
+      - name: Install and build example
+        working-directory: examples/jekyll-component-framework
+        run: |
+          bundle install
+          bundle exec jekyll build
