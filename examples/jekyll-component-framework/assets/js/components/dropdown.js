@@ -31,7 +31,11 @@ export function initDropdown() {
 
     trigger.addEventListener('click', (e) => {
       e.stopPropagation();
-      isOpen() ? close() : open();
+      if (isOpen()) {
+        close();
+      } else {
+        open();
+      }
     });
 
     // Keyboard on trigger
