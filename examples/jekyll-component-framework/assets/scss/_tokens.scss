@@ -1,0 +1,305 @@
+// =============================================================================
+// Design Tokens
+// Centralized design system tokens via CSS Custom Properties
+// Override these in your project to rebrand the entire framework
+// =============================================================================
+
+:root {
+  // ---------------------------------------------------------------------------
+  // Color Palette - Brand
+  // ---------------------------------------------------------------------------
+  --color-primary: #285943;
+  --color-primary-hover: #214a37;
+  --color-primary-active: #193a2b;
+  --color-primary-subtle: #e8efe6;
+
+  --color-secondary: #76684e;
+  --color-secondary-hover: #60543f;
+  --color-secondary-active: #4a4030;
+  --color-secondary-subtle: #f0ecdf;
+
+  // ---------------------------------------------------------------------------
+  // Color Palette - Semantic
+  // ---------------------------------------------------------------------------
+  --color-success: #3f754c;
+  --color-success-hover: #315e3c;
+  --color-success-subtle: #e9f2e8;
+
+  --color-warning: #a66b24;
+  --color-warning-hover: #85531c;
+  --color-warning-subtle: #f7f0df;
+
+  --color-danger: #b54838;
+  --color-danger-hover: #92392d;
+  --color-danger-subtle: #f7eae5;
+
+  --color-info: #3b7375;
+  --color-info-hover: #2e5c5e;
+  --color-info-subtle: #e8f0ed;
+
+  // ---------------------------------------------------------------------------
+  // Color Palette - Surface & Text
+  // ---------------------------------------------------------------------------
+  --color-background: #faf8f0;
+  --color-surface: #f1eee4;
+  --color-surface-elevated: #fffef9;
+  --color-overlay: rgba(26, 39, 29, 0.58);
+
+  --color-text: #27332a;
+  --color-text-muted: #626b5e;
+  --color-text-subtle: #858879;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #e1ddcf;
+  --color-border-strong: #c9c3b1;
+  --color-border-subtle: #efecdf;
+
+  // ---------------------------------------------------------------------------
+  // Select Popup
+  // ---------------------------------------------------------------------------
+  --color-select-popup: var(--color-surface-elevated);
+  --color-select-popup-border: var(--color-border);
+  --color-select-option-hover: var(--color-primary-subtle);
+  --color-select-option-selected: var(--color-primary-subtle);
+  --radius-select-popup: var(--radius-md);
+  --shadow-select-popup: var(--shadow-md);
+
+  // ---------------------------------------------------------------------------
+  // Scrollbar
+  // ---------------------------------------------------------------------------
+  --scrollbar-track: var(--color-surface);
+  --scrollbar-thumb: var(--color-border-strong);
+  --scrollbar-thumb-hover: var(--color-text-subtle);
+  --scrollbar-size: 0.75rem;
+  --scrollbar-radius: var(--radius-full);
+  --scrollbar-width: thin;
+
+  --color-focus-ring: #285943;
+  --color-focus-ring-offset: #faf8f0;
+
+  // ---------------------------------------------------------------------------
+  // Thicket Brand
+  // ---------------------------------------------------------------------------
+  --color-brand-forest: #203b2d;
+  --color-brand-forest-light: #2d503c;
+  --color-brand-paper: #faf8f0;
+  --color-brand-petal: #e7c579;
+
+  // ---------------------------------------------------------------------------
+  // Typography
+  // ---------------------------------------------------------------------------
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --font-size-xs: 0.75rem;    // 12px
+  --font-size-sm: 0.875rem;   // 14px
+  --font-size-base: 1rem;     // 16px
+  --font-size-lg: 1.125rem;   // 18px
+  --font-size-xl: 1.25rem;    // 20px
+  --font-size-2xl: 1.5rem;    // 24px
+  --font-size-3xl: 1.875rem;  // 30px
+  --font-size-4xl: 2.25rem;   // 36px
+  --font-size-5xl: 3rem;      // 48px
+  --font-size-6xl: 3.75rem;   // 60px
+
+  --line-height-none: 1;
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+  --line-height-loose: 2;
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+
+  // ---------------------------------------------------------------------------
+  // Spacing Scale (4px base)
+  // ---------------------------------------------------------------------------
+  --space-0: 0;
+  --space-1: 0.25rem;   // 4px
+  --space-2: 0.5rem;    // 8px
+  --space-3: 0.75rem;   // 12px
+  --space-4: 1rem;      // 16px
+  --space-5: 1.25rem;   // 20px
+  --space-6: 1.5rem;    // 24px
+  --space-8: 2rem;      // 32px
+  --space-10: 2.5rem;   // 40px
+  --space-12: 3rem;     // 48px
+  --space-16: 4rem;     // 64px
+  --space-20: 5rem;     // 80px
+  --space-24: 6rem;     // 96px
+
+  // ---------------------------------------------------------------------------
+  // Border Radius
+  // ---------------------------------------------------------------------------
+  --radius-none: 0;
+  --radius-sm: 0.25rem;    // 4px
+  --radius-md: 0.5rem;     // 8px
+  --radius-lg: 1rem;       // 16px
+  --radius-xl: 1.75rem;    // 28px
+  --radius-2xl: 2.5rem;    // 40px
+  --radius-full: 9999px;
+
+  // ---------------------------------------------------------------------------
+  // Shadows
+  // ---------------------------------------------------------------------------
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.15);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.35);
+
+  // ---------------------------------------------------------------------------
+  // Container Widths
+  // ---------------------------------------------------------------------------
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  // ---------------------------------------------------------------------------
+  // Z-Index Scale
+  // ---------------------------------------------------------------------------
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+
+  // ---------------------------------------------------------------------------
+  // Transitions
+  // ---------------------------------------------------------------------------
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms ease;
+  --transition-theme: 200ms ease;
+
+  // ---------------------------------------------------------------------------
+  // Focus
+  // ---------------------------------------------------------------------------
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+// =============================================================================
+// Dark Theme
+// =============================================================================
+[data-theme="dark"] {
+  --color-primary: #a1c49e;
+  --color-primary-hover: #bad3b5;
+  --color-primary-active: #d0e2ca;
+  --color-primary-subtle: #263b2e;
+
+  --color-secondary: #c4b58e;
+  --color-secondary-hover: #d8cba7;
+  --color-secondary-active: #e8ddbd;
+  --color-secondary-subtle: #39392e;
+
+  --color-success: #91c397;
+  --color-success-hover: #acd3ae;
+  --color-success-subtle: #1e3728;
+
+  --color-warning: #e0b66c;
+  --color-warning-hover: #edca8a;
+  --color-warning-subtle: #3d3324;
+
+  --color-danger: #e48d79;
+  --color-danger-hover: #efa695;
+  --color-danger-subtle: #3f2925;
+
+  --color-info: #88babc;
+  --color-info-hover: #a2cccd;
+  --color-info-subtle: #21393a;
+
+  --color-background: #17241c;
+  --color-surface: #202f25;
+  --color-surface-elevated: #2b3b30;
+  --color-overlay: rgba(6, 14, 9, 0.76);
+
+  --color-text: #f4f0df;
+  --color-text-muted: #bac1ae;
+  --color-text-subtle: #8f9a89;
+  --color-text-inverse: #17241c;
+
+  --color-border: #3b4a3c;
+  --color-border-strong: #53604e;
+  --color-border-subtle: #2b392e;
+
+  --color-focus-ring: #a1c49e;
+  --color-focus-ring-offset: #17241c;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.22);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 3px rgba(161, 196, 158, 0.4);
+}
+
+// System preference fallback (when data-theme="system")
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-primary: #a1c49e;
+    --color-primary-hover: #bad3b5;
+    --color-primary-active: #d0e2ca;
+    --color-primary-subtle: #263b2e;
+
+    --color-secondary: #c4b58e;
+    --color-secondary-hover: #d8cba7;
+    --color-secondary-active: #e8ddbd;
+    --color-secondary-subtle: #39392e;
+
+    --color-success: #91c397;
+    --color-success-hover: #acd3ae;
+    --color-success-subtle: #1e3728;
+
+    --color-warning: #e0b66c;
+    --color-warning-hover: #edca8a;
+    --color-warning-subtle: #3d3324;
+
+    --color-danger: #e48d79;
+    --color-danger-hover: #efa695;
+    --color-danger-subtle: #3f2925;
+
+    --color-info: #88babc;
+    --color-info-hover: #a2cccd;
+    --color-info-subtle: #21393a;
+
+    --color-background: #17241c;
+    --color-surface: #202f25;
+    --color-surface-elevated: #2b3b30;
+    --color-overlay: rgba(6, 14, 9, 0.76);
+
+    --color-text: #f4f0df;
+    --color-text-muted: #bac1ae;
+    --color-text-subtle: #8f9a89;
+    --color-text-inverse: #17241c;
+
+    --color-border: #3b4a3c;
+    --color-border-strong: #53604e;
+    --color-border-subtle: #2b392e;
+
+    --color-focus-ring: #a1c49e;
+    --color-focus-ring-offset: #17241c;
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.22);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.22);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.32);
+    --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.5);
+    --shadow-focus: 0 0 0 3px rgba(161, 196, 158, 0.4);
+  }
+}

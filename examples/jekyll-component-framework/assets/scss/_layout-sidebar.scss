@@ -1,0 +1,159 @@
+@use "mixins";
+
+// =============================================================================
+// With-sidebar layout
+// Desktop: sticky sidebar | Mobile: offcanvas (trigger + panel via Liquid)
+// =============================================================================
+
+.l-with-sidebar {
+  display: grid;
+  gap: var(--space-6);
+  padding-block: var(--space-6);
+
+  @include mixins.respond-to(lg) {
+    grid-template-columns: 16rem 1fr;
+    gap: var(--space-12);
+    padding-block: var(--space-8);
+  }
+
+  // Reverse column order when sidebar is on the right
+  &--sidebar-end {
+    @include mixins.respond-to(lg) {
+      grid-template-columns: 1fr 16rem;
+
+      .l-with-sidebar__aside {
+        order: 2;
+      }
+
+      .l-with-sidebar__main {
+        order: 1;
+      }
+    }
+  }
+}
+
+// Mobile trigger — hidden from lg up
+.l-with-sidebar__toggle {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+
+  &:hover {
+    background: var(--color-surface-elevated);
+    border-color: var(--color-border-strong, var(--color-border));
+  }
+
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  svg {
+    width: 1.125rem;
+    height: 1.125rem;
+    flex-shrink: 0;
+  }
+
+  @include mixins.respond-to(lg) {
+    display: none;
+  }
+}
+
+// Desktop sticky sidebar — hidden on mobile
+.l-with-sidebar__aside {
+  display: none;
+
+  @include mixins.respond-to(lg) {
+    display: block;
+    position: sticky;
+    top: 5rem;
+    align-self: start;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+}
+
+.l-with-sidebar__main {
+  min-width: 0;
+}
+
+// ---------------------------------------------------------------------------
+// Shared sidebar nav (docs, blog, any secondary nav)
+// ---------------------------------------------------------------------------
+
+.l-sidebar-nav {
+  // no outer margin; groups handle spacing
+}
+
+.l-sidebar-nav__group {
+  margin-bottom: var(--space-6);
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.l-sidebar-nav__title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-subtle);
+  margin-bottom: var(--space-2);
+  padding-inline: var(--space-3);
+}
+
+.l-sidebar-nav__link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-text);
+    background: var(--color-surface);
+  }
+
+  &.is-active {
+    color: var(--color-primary);
+    background: var(--color-primary-subtle);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+// Meta / caption lines inside sidebar (e.g. post date under recent list)
+.l-sidebar-nav__meta {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-subtle);
+}
+
+// Offcanvas body: slightly tighter group spacing
+.c-offcanvas__body .l-sidebar-nav__group {
+  margin-bottom: var(--space-5);
+}

@@ -1,0 +1,40 @@
+{% comment %}
+  CTA Section
+
+  Parameters:
+  - title, subtitle
+  - primary_label, primary_href
+  - secondary_label, secondary_href
+  - variant (default|solid)
+{% endcomment %}
+
+{% assign variant = include.variant | default: "default" %}
+
+<section class="s-cta l-section {{ include.class | escape }}">
+  <div class="l-container">
+    <div class="s-cta__inner s-cta--{{ variant | escape }}">
+      <h2 class="s-cta__title">{{ include.title | escape }}</h2>
+      {% if include.subtitle %}
+        <p class="s-cta__subtitle">{{ include.subtitle | escape }}</p>
+      {% endif %}
+      <div class="s-cta__actions">
+        {% if include.primary_label %}
+          {% include components/button.html
+            label=include.primary_label
+            href=include.primary_href
+            variant="primary"
+            size="lg"
+          %}
+        {% endif %}
+        {% if include.secondary_label %}
+          {% include components/button.html
+            label=include.secondary_label
+            href=include.secondary_href
+            variant="outline"
+            size="lg"
+          %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>

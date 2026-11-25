@@ -1,25 +1,109 @@
 {% comment %}
-  Component: button
-  Usage: {% include components/button.html label="Click me" variant="primary" href="/about" %}
-{% endcomment %}
-{% assign variant = include.variant | default: "primary" %}
-{% assign label = include.label | default: "Button" %}
-{% assign extra_class = include.class | default: "" %}
-{% assign href = include.href %}
-{% assign type = include.type | default: "button" %}
+  Button Component
 
-{% if href %}
-  <a
-    class="button button--{{ variant | escape }} {{ extra_class | escape }}"
-    href="{{ href | escape }}"
+  Parameters:
+  - label       (string, required unless icon_only)
+  - href        (string)  → renders as <a> (navigation semantics, no role="button")
+  - type        (string)  → button type (button|submit|reset), default: button
+  - variant     (string)  → primary|secondary|outline|ghost|danger|success, default: primary
+  - size        (string)  → sm|md|lg, default: md
+  - disabled    (boolean)
+  - target      (string)  → _blank, etc.
+  - modal_open  (string)  → id of a modal to open
+  - offcanvas_open (string) → id of an offcanvas panel to open
+  - icon        (string)  → icon name
+  - icon_position (string) → left|right, default: left
+  - icon_only   (boolean)
+  - ripple      (boolean) → enable pointer / keyboard ripple feedback
+  - block       (boolean)
+  - class       (string)  → extra classes
+  - id          (string)
+  - aria_label  (string)
+
+  Accessibility:
+  - With href → native <a> (link semantics). Never role="button".
+  - Without href → native <button>.
+  - disabled + href → non-interactive <span> (no accidental navigation).
+{% endcomment %}
+
+{% assign variant = include.variant | default: "primary" %}
+{% assign size = include.size | default: "md" %}
+{% unless size == "sm" or size == "md" or size == "lg" %}
+  {% assign size = "md" %}
+{% endunless %}
+{% assign type = include.type | default: "button" %}
+{% assign icon_position = include.icon_position | default: "left" %}
+{% capture safe_href %}{% include partials/safe-url.html url=include.href %}{% endcapture %}
+{% assign safe_href = safe_href | strip %}
+
+{% capture btn_classes %}
+  c-button
+  c-button--{{ variant | escape }}
+  c-button--{{ size | escape }}
+  {% if include.ripple %}c-button--ripple{% endif %}
+  {% if include.block %}c-button--block{% endif %}
+  {% if include.icon_only %}c-button--icon-only{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign btn_classes = btn_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+{% capture btn_inner %}
+  {% if include.icon and icon_position == "left" %}
+    <span class="c-button__icon" aria-hidden="true">
+      {% include icon.html name=include.icon %}
+    </span>
+  {% endif %}
+  {% unless include.icon_only %}
+    <span class="c-button__label">{{ include.label | escape }}</span>
+  {% endunless %}
+  {% if include.icon and icon_position == "right" %}
+    <span class="c-button__icon" aria-hidden="true">
+      {% include icon.html name=include.icon %}
+    </span>
+  {% endif %}
+{% endcapture %}
+
+{% if include.href and safe_href == "" %}
+  <span
+    class="{{ btn_classes | escape }}"
     {% if include.id %}id="{{ include.id | escape }}"{% endif %}
-    {% if include.target %}target="{{ include.target | escape }}" rel="noopener noreferrer"{% endif %}
-  >{{ label | escape }}</a>
+    aria-disabled="true"
+    data-thicket-invalid-url="true"
+    {% if include.aria_label %}aria-label="{{ include.aria_label | escape }}"{% elsif include.icon_only and include.label %}aria-label="{{ include.label | escape }}"{% endif %}
+  >
+    {{ btn_inner }}
+  </span>
+{% elsif include.href and include.disabled %}
+  <span
+    class="{{ btn_classes | escape }}"
+    {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+    aria-disabled="true"
+    {% if include.aria_label %}aria-label="{{ include.aria_label | escape }}"{% elsif include.icon_only and include.label %}aria-label="{{ include.label | escape }}"{% endif %}
+  >
+    {{ btn_inner }}
+  </span>
+{% elsif include.href %}
+  <a
+    href="{{ safe_href | relative_url | escape }}"
+    class="{{ btn_classes | escape }}"
+    {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+    {% if include.target %}target="{{ include.target | escape }}"{% if include.target == "_blank" %} rel="noopener noreferrer"{% endif %}{% endif %}
+    {% if include.modal_open %}data-modal-open="{{ include.modal_open | escape }}"{% endif %}
+    {% if include.offcanvas_open %}data-offcanvas-open="{{ include.offcanvas_open | escape }}" aria-controls="{{ include.offcanvas_open | escape }}" aria-expanded="false"{% endif %}
+    {% if include.aria_label %}aria-label="{{ include.aria_label | escape }}"{% elsif include.icon_only and include.label %}aria-label="{{ include.label | escape }}"{% endif %}
+  >
+    {{ btn_inner }}
+  </a>
 {% else %}
   <button
     type="{{ type | escape }}"
-    class="button button--{{ variant | escape }} {{ extra_class | escape }}"
+    class="{{ btn_classes | escape }}"
     {% if include.id %}id="{{ include.id | escape }}"{% endif %}
     {% if include.disabled %}disabled{% endif %}
-  >{{ label | escape }}</button>
+    {% if include.modal_open %}data-modal-open="{{ include.modal_open | escape }}"{% endif %}
+    {% if include.offcanvas_open %}data-offcanvas-open="{{ include.offcanvas_open | escape }}" aria-controls="{{ include.offcanvas_open | escape }}" aria-expanded="false"{% endif %}
+    {% if include.aria_label %}aria-label="{{ include.aria_label | escape }}"{% elsif include.icon_only and include.label %}aria-label="{{ include.label | escape }}"{% endif %}
+  >
+    {{ btn_inner }}
+  </button>
 {% endif %}

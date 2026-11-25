@@ -1,0 +1,61 @@
+<section class="section component-section" id="components">
+  <div class="container">
+    <div class="section-heading component-section-heading">
+      <p class="eyebrow">A few things growing here</p>
+      <h2>Useful components.<br><em>Quietly distinctive.</em></h2>
+      <p>Thicket UI brings a consistent visual language to everyday interface pieces—ready to use, easy to shape.</p>
+    </div>
+
+    <div class="component-showcase-grid">
+      <article class="component-tile component-tile--buttons">
+        <div class="component-tile-head">
+          <span class="component-index">01</span>
+          <span class="component-kind">BUTTONS</span>
+        </div>
+        <h3>Good things start small.</h3>
+        <p>Clear actions, considered states, and just enough character.</p>
+        <div class="button-demo">
+          {% include components/button.html url=site.framework_url label="Explore Thicket" variant="primary" size="md" arrow=true external=true %}
+          {% include components/button.html url="#get-started" label="See how it works" variant="outline" size="md" %}
+        </div>
+        <pre class="component-code"><code>{% raw %}{% include components/button.html label="Explore" variant="primary" %}{% endraw %}</code></pre>
+      </article>
+
+      <article class="component-tile component-tile--alert">
+        <div class="component-tile-head">
+          <span class="component-index">02</span>
+          <span class="component-kind">FEEDBACK</span>
+        </div>
+        <h3>Helpful, never harsh.</h3>
+        <p>Accessible status messages make the next step feel clear.</p>
+        <div class="c-alert c-alert--info showcase-alert" role="status">
+          <span class="showcase-alert-mark" aria-hidden="true">✳</span>
+          <div class="c-alert__content">
+            <div class="c-alert__title">A little progress</div>
+            <div class="c-alert__message">Your component garden is taking shape.</div>
+          </div>
+        </div>
+        <pre class="component-code"><code>{% raw %}{% include components/alert.html variant="success" title="Saved" message="Looks good." %}{% endraw %}</code></pre>
+      </article>
+
+      <article class="component-tile component-tile--card">
+        <div class="component-tile-head">
+          <span class="component-index">03</span>
+          <span class="component-kind">CARDS</span>
+        </div>
+        <h3>Room for your ideas.</h3>
+        <p>Flexible foundations that let the content take root.</p>
+        <article class="c-card c-card--elevated showcase-card">
+          <div class="showcase-card-mark" aria-hidden="true">✳</div>
+          <div class="c-card__header">
+            <span class="c-badge c-badge--primary c-badge--sm">Jekyll native</span>
+            <h4 class="c-card__title">Built to belong.</h4>
+          </div>
+          <div class="c-card__body">Liquid components, ready for your site.</div>
+        </article>
+        <pre class="component-code"><code>{% raw %}{% include components/card.html title="Feature" elevated=true %}{% endraw %}</code></pre>
+      </article>
+    </div>
+    <a class="text-link component-link" href="{{ site.framework_url }}" target="_blank" rel="noopener noreferrer">Wander through the full component garden <span aria-hidden="true">↗</span></a>
+  </div>
+</section>

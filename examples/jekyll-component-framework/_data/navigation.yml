@@ -1,0 +1,7 @@
+main:
+  - title: Button
+    url: /examples/components/button/
+  - title: Card
+    url: /examples/components/card/
+  - title: Alert
+    url: /examples/components/alert/

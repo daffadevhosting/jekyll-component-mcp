@@ -1,10 +1,8 @@
-- label: Features
-  url: "/#features"
-- label: Workflow
+- label: Components
+  url: "/#components"
+- label: How it works
   url: "/#workflow"
-- label: Safety
+- label: Built with care
   url: "/#safety"
-- label: Get started
-  url: "/#get-started"
 - label: Changelog
   url: "/changelog/"

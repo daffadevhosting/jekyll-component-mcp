@@ -1,18 +1,20 @@
-title: jekyll-component-mcp
-description: An MCP server that helps AI agents explore, create, validate, and document reusable Jekyll components.
+title: Jekyll Component MCP x Thicket UI
+description: A living, accessible component garden for Jekyll, with AI-assisted tools to explore, build, and maintain your Liquid components.
 url: "https://jekyll-component-mcp.pages.dev"
 baseurl: ""
 lang: en
 markdown: kramdown
 permalink: pretty
-version: "1.5.0"
+version: "1.7.0"
+thicket_version: "1.4.7"
 github_url: https://github.com/daffadevhosting/jekyll-component-mcp
+framework_url: https://github.com/daffadevhosting/jekyll-component-framework
 npm_url: https://www.npmjs.com/package/jekyll-component-mcp
-thicket_css: https://unpkg.com/thicket-ui@1.4.5/dist/thicket.css
+thicket_css: https://unpkg.com/thicket-ui@1.4.7/dist/thicket.css
 author:
-  name: jekyll-component-mcp
+  name: Thicket UI
 social:
-  name: jekyll-component-mcp
+  name: Thicket UI
   links:
     - https://github.com/daffadevhosting/jekyll-component-mcp
 plugins:

@@ -1,0 +1,55 @@
+@use "../mixins";
+
+// =============================================================================
+// Newsletter Section
+// =============================================================================
+
+.s-newsletter {
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-6);
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+
+  &__title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+
+    @include mixins.respond-to(md) {
+      font-size: var(--font-size-3xl);
+    }
+  }
+
+  &__subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    line-height: var(--line-height-relaxed);
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 100%;
+
+    @include mixins.respond-to(sm) {
+      flex-direction: row;
+      align-items: stretch;
+    }
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__hint {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-subtle);
+  }
+}

@@ -1,0 +1,13 @@
+{% comment %}
+  Grid Component
+
+  Parameters:
+  - columns (number) → 2, 3, or 4
+  - gap     (number) → 1, 2, 3, 4, 6, or 8
+  - content (string) → HTML content
+  - class   (string)
+{% endcomment %}
+
+<div class="l-grid{% if include.columns == 2 or include.columns == '2' %} l-grid--cols-2{% elsif include.columns == 3 or include.columns == '3' %} l-grid--cols-3{% elsif include.columns == 4 or include.columns == '4' %} l-grid--cols-4{% endif %}{% if include.gap %} u-gap-{{ include.gap | escape }}{% endif %}{% if include.class %} {{ include.class | escape }}{% endif %}">
+  {{ include.content }}
+</div>

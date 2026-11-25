@@ -1,0 +1,96 @@
+// =============================================================================
+// Dropdown Component
+// =============================================================================
+
+.c-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.c-dropdown__menu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  z-index: var(--z-dropdown);
+  min-width: 12rem;
+  padding: var(--space-1);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-0.25rem);
+  transition: opacity var(--transition-fast), visibility var(--transition-fast), transform var(--transition-fast);
+
+  &.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  &--right {
+    left: auto;
+    right: 0;
+  }
+}
+
+.c-dropdown__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+  transition: background-color var(--transition-fast);
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--color-surface);
+    outline: none;
+  }
+
+  &--danger {
+    color: var(--color-danger);
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-danger-subtle);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+  }
+}
+
+.c-dropdown__divider {
+  height: 1px;
+  margin: var(--space-1) 0;
+  background-color: var(--color-border);
+  border: none;
+}
+
+.c-dropdown__label {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+}

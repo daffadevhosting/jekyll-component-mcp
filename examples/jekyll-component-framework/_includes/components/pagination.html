@@ -1,0 +1,157 @@
+{% comment %}
+  Pagination Component
+
+  Parameters:
+  - current     (number)  → current page (1-based)
+  - total       (number)  → total pages
+  - base_url    (string)  → e.g. /blog
+  - size        (string)  → sm|md|lg
+  - demo        (boolean) → if true, links use href="#" (for docs/playground demos)
+  - class       (string)
+
+  For Jekyll paginator, pass:
+    current=paginator.page
+    total=paginator.total_pages
+    base_url="/blog"
+{% endcomment %}
+
+{% assign current = include.current | default: 1 | plus: 0 %}
+{% assign total = include.total | default: 1 | plus: 0 %}
+{% assign size = include.size | default: "md" %}
+{% assign base = include.base_url | default: "" %}
+{% assign is_demo = include.demo | default: false %}
+
+{% if total > 1 %}
+<nav
+  class="c-pagination{% if size != 'md' %} c-pagination--{{ size | escape }}{% endif %} {{ include.class | escape }}"
+  aria-label="{{ include.aria_label | default: 'Pagination' | escape }}"
+>
+  <ul class="c-pagination">
+    {%- comment -%} Previous {%- endcomment -%}
+    <li class="c-pagination__item">
+      {% if current > 1 %}
+        {% assign prev = current | minus: 1 %}
+        {% if is_demo %}
+          {% assign prev_url = "#" %}
+        {% elsif prev == 1 %}
+          {% assign prev_url = base | append: "/" %}
+        {% else %}
+          {% assign prev_url = base | append: "/page/" | append: prev | append: "/" %}
+        {% endif %}
+        {% capture safe_prev_url %}{% include partials/safe-url.html url=prev_url %}{% endcapture %}
+        {% assign safe_prev_url = safe_prev_url | strip %}
+        {% if safe_prev_url != "" %}
+        <a
+          href="{{ safe_prev_url | relative_url | escape }}"
+          class="c-pagination__link"
+          aria-label="Previous page"
+          {% if is_demo %}tabindex="-1"{% endif %}
+        >
+          {% include icon.html name="arrow-left" %}
+        </a>
+        {% else %}
+        <span class="c-pagination__link" aria-disabled="true" aria-label="Previous page" data-thicket-invalid-url="true">
+          {% include icon.html name="arrow-left" %}
+        </span>
+        {% endif %}
+      {% else %}
+        <span class="c-pagination__link" aria-disabled="true" aria-label="Previous page">
+          {% include icon.html name="arrow-left" %}
+        </span>
+      {% endif %}
+    </li>
+
+    {%- comment -%} Page numbers with ellipsis {%- endcomment -%}
+    {% assign window = 1 %}
+    {% for page_num in (1..total) %}
+      {% assign show = false %}
+      {% if page_num == 1 or page_num == total %}
+        {% assign show = true %}
+      {% endif %}
+      {% assign diff = page_num | minus: current | abs %}
+      {% if diff <= window %}
+        {% assign show = true %}
+      {% endif %}
+
+      {% if show %}
+        <li class="c-pagination__item">
+          {% if page_num == current %}
+            <span class="c-pagination__link" aria-current="page">{{ page_num | escape }}</span>
+          {% else %}
+            {% if is_demo %}
+              {% assign page_url = "#" %}
+            {% elsif page_num == 1 %}
+              {% assign page_url = base | append: "/" %}
+            {% else %}
+              {% assign page_url = base | append: "/page/" | append: page_num | append: "/" %}
+            {% endif %}
+            {% capture safe_page_url %}{% include partials/safe-url.html url=page_url %}{% endcapture %}
+            {% assign safe_page_url = safe_page_url | strip %}
+            {% if safe_page_url != "" %}
+            <a
+              href="{{ safe_page_url | relative_url | escape }}"
+              class="c-pagination__link"
+              aria-label="Page {{ page_num | escape }}"
+              {% if is_demo %}tabindex="-1"{% endif %}
+            >
+              {{ page_num | escape }}
+            </a>
+            {% else %}
+            <span class="c-pagination__link" aria-disabled="true" data-thicket-invalid-url="true">
+              {{ page_num | escape }}
+            </span>
+            {% endif %}
+          {% endif %}
+        </li>
+      {% else %}
+        {% assign prev_show = false %}
+        {% assign prev_num = page_num | minus: 1 %}
+        {% if prev_num == 1 or prev_num == total %}
+          {% assign prev_show = true %}
+        {% endif %}
+        {% assign prev_diff = prev_num | minus: current | abs %}
+        {% if prev_diff <= window %}
+          {% assign prev_show = true %}
+        {% endif %}
+        {% if prev_show %}
+          <li class="c-pagination__item">
+            <span class="c-pagination__ellipsis" aria-hidden="true">…</span>
+          </li>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+
+    {%- comment -%} Next {%- endcomment -%}
+    <li class="c-pagination__item">
+      {% if current < total %}
+        {% assign next = current | plus: 1 %}
+        {% if is_demo %}
+          {% assign next_url = "#" %}
+        {% else %}
+          {% assign next_url = base | append: "/page/" | append: next | append: "/" %}
+        {% endif %}
+        {% capture safe_next_url %}{% include partials/safe-url.html url=next_url %}{% endcapture %}
+        {% assign safe_next_url = safe_next_url | strip %}
+        {% if safe_next_url != "" %}
+        <a
+          href="{{ safe_next_url | relative_url | escape }}"
+          class="c-pagination__link"
+          aria-label="Next page"
+          {% if is_demo %}tabindex="-1"{% endif %}
+        >
+          {% include icon.html name="arrow-right" %}
+        </a>
+        {% else %}
+        <span class="c-pagination__link" aria-disabled="true" aria-label="Next page" data-thicket-invalid-url="true">
+          {% include icon.html name="arrow-right" %}
+        </span>
+        {% endif %}
+      {% else %}
+        <span class="c-pagination__link" aria-disabled="true" aria-label="Next page">
+          {% include icon.html name="arrow-right" %}
+        </span>
+      {% endif %}
+    </li>
+  </ul>
+</nav>
+{% endif %}

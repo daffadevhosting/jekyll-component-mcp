@@ -1,0 +1,77 @@
+{% comment %}
+  Dropdown Component
+
+  Parameters:
+  - id          (string, required)
+  - label       (string) → trigger button label
+  - variant     (string) → button variant, default: outline
+  - size        (string)
+  - items       (array of {label, href, danger, divider, disabled})
+  - align       (string) → left|right, default: left
+  - class       (string)
+{% endcomment %}
+
+{% assign dropdown_id = include.id %}
+{% assign variant = include.variant | default: "outline" %}
+{% assign size = include.size | default: "md" %}
+{% assign align = include.align | default: "left" %}
+
+<div class="c-dropdown {{ include.class | escape }}" data-dropdown>
+  <button
+    type="button"
+    class="c-button c-button--{{ variant | escape }} c-button--{{ size | escape }}"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="{{ dropdown_id | escape }}-menu"
+    id="{{ dropdown_id | escape }}-trigger"
+    data-dropdown-trigger
+  >
+    {{ include.label | escape }}
+    <span class="c-button__icon" aria-hidden="true">
+      {% include icon.html name="chevron-down" %}
+    </span>
+  </button>
+
+  <div
+    class="c-dropdown__menu{% if align == 'right' %} c-dropdown__menu--right{% endif %}"
+    id="{{ dropdown_id | escape }}-menu"
+    role="menu"
+    aria-labelledby="{{ dropdown_id | escape }}-trigger"
+    hidden
+    data-dropdown-menu
+  >
+    {% for item in include.items %}
+      {% if item.divider %}
+        <hr class="c-dropdown__divider" role="separator">
+      {% elsif item.label_only %}
+        <div class="c-dropdown__label">{{ item.label | escape }}</div>
+      {% else %}
+        {% capture safe_item_href %}{% include partials/safe-url.html url=item.href %}{% endcapture %}
+        {% assign safe_item_href = safe_item_href | strip %}
+        {% if item.href and safe_item_href != "" %}
+          <a
+            href="{{ safe_item_href | relative_url | escape }}"
+            class="c-dropdown__item{% if item.danger %} c-dropdown__item--danger{% endif %}"
+            role="menuitem"
+            {% if item.disabled %}aria-disabled="true" tabindex="-1"{% endif %}
+          >
+            {{ item.label | escape }}
+          </a>
+        {% elsif item.href %}
+          <span class="c-dropdown__item" role="menuitem" aria-disabled="true" data-thicket-invalid-url="true">
+            {{ item.label | escape }}
+          </span>
+        {% else %}
+          <button
+            type="button"
+            class="c-dropdown__item{% if item.danger %} c-dropdown__item--danger{% endif %}"
+            role="menuitem"
+            {% if item.disabled %}disabled{% endif %}
+          >
+            {{ item.label | escape }}
+          </button>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>

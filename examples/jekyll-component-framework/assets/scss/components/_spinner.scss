@@ -1,0 +1,68 @@
+// =============================================================================
+// Spinner Component
+// =============================================================================
+
+.c-spinner {
+  display: inline-block;
+  border-radius: var(--radius-full);
+  border-style: solid;
+  border-color: var(--color-border);
+  border-top-color: var(--color-primary);
+  animation: spin 0.7s linear infinite;
+
+  // Sizes
+  &--sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 2px;
+  }
+
+  &--md {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-width: 2.5px;
+  }
+
+  &--lg {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-width: 3px;
+  }
+
+  // Color variants
+  &--primary {
+    border-top-color: var(--color-primary);
+  }
+
+  &--secondary {
+    border-top-color: var(--color-secondary);
+  }
+
+  &--inverse {
+    border-color: rgba(255, 255, 255, 0.25);
+    border-top-color: #fff;
+  }
+
+  // Centered block helper
+  &--block {
+    display: block;
+    margin-inline: auto;
+  }
+}
+
+// Loading overlay (optional wrapper)
+.c-spinner-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-spinner {
+    animation-duration: 1.5s;
+  }
+}

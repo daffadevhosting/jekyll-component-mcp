@@ -1,35 +1,48 @@
 <section class="hero">
   <div class="container hero-grid">
     <div class="hero-copy">
-      <p class="eyebrow"><span class="eyebrow-dot"></span> Version {{ site.version }} <span aria-hidden="true">·</span> Your Jekyll workflow, in context</p>
-      <h1>Better building blocks for <em>Jekyll.</em></h1>
-      <p class="hero-intro">Give your AI assistant the context and tools to explore, create, and validate reusable Liquid components—right inside your project.</p>
+      <p class="eyebrow"><span class="eyebrow-dot"></span> Thicket UI <span class="version-pill">v{{ site.thicket_version }}</span> <span aria-hidden="true">·</span> A living component garden</p>
+      <h1>Thoughtful interfaces,<br><em>grown in Jekyll.</em></h1>
+      <p class="hero-intro">Meet Thicket UI: accessible, Liquid-native components wrapped in a warm design system. The companion MCP helps your AI understand the garden before it grows.</p>
       <div class="hero-actions">
-        {% include components/button.html url="#get-started" label="Get started" arrow=true %}
-        {% include components/button.html url=site.github_url label="Explore on GitHub" variant="quiet" external=true %}
+        {% include components/button.html url=site.framework_url label="Explore the garden" variant="primary" size="lg" arrow=true external=true %}
+        {% include components/button.html url="#get-started" label="Bring the MCP" variant="outline" size="lg" %}
       </div>
-      <p class="hero-note">Open source <span aria-hidden="true">·</span> Node.js 20+ <span aria-hidden="true">·</span> Works with MCP clients</p>
+      <p class="hero-note">Liquid-native <span aria-hidden="true">·</span> Accessible by design <span aria-hidden="true">·</span> MCP {{ site.version }}</p>
     </div>
-    <div class="hero-visual" aria-label="Example Jekyll component workflow" role="img">
+    <aside class="hero-visual" aria-label="Live preview of Thicket UI components">
       <div class="visual-topbar">
         <span class="window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span>your-jekyll-site</span>
-        <span class="connected"><i></i> connected</span>
+        <span>thicket-ui / component-garden</span>
+        <span class="connected"><i></i> v{{ site.thicket_version }}</span>
       </div>
       <div class="visual-body">
-        <p class="terminal-label">ASSISTANT / JEKYLL COMPONENT MCP</p>
-        <p class="terminal-prompt"><span>›</span> jekyll_project_info</p>
-        <div class="project-summary">
-          <div class="summary-title"><span class="summary-icon" aria-hidden="true">⌘</span> Project overview</div>
-          <div class="summary-row"><span>Components</span><strong>30+ found</strong></div>
-          <div class="summary-row"><span>SCSS system</span><strong class="status-good">Detected</strong></div>
-          <div class="summary-row"><span>Write mode</span><strong>safe-write</strong></div>
+        <div class="preview-topline">
+          <p class="terminal-label">A LITTLE NATURE, A LOT OF INTENTION</p>
+          <span class="c-badge c-badge--success c-badge--sm"><span class="c-badge__dot" aria-hidden="true"></span> Framework ready</span>
         </div>
-        <p class="terminal-prompt terminal-prompt--second"><span>›</span> Create a reusable alert component</p>
-        <div class="file-result"><span class="file-plus" aria-hidden="true">+</span> Update, preview, test &amp; export <span class="file-check" aria-hidden="true">✓</span></div>
+        <article class="c-card c-card--hoverable hero-preview-card">
+          <div class="hero-preview-card__leaf" aria-hidden="true">✳</div>
+          <div class="c-card__header">
+            <span class="c-badge c-badge--secondary c-badge--sm">LIQUID · SCSS · JS</span>
+            <h2 class="c-card__title">Made to feel at home.</h2>
+            <p class="c-card__subtitle">Small, considered details. Room to make them yours.</p>
+          </div>
+          <div class="hero-preview-actions">
+            {% include components/button.html url="#components" label="Explore components" variant="primary" size="sm" arrow=true %}
+            <span class="hero-preview-token"><i></i> --color-primary</span>
+          </div>
+        </article>
+        <div class="c-alert c-alert--success hero-preview-alert" role="status">
+          <span class="hero-alert-mark" aria-hidden="true">✓</span>
+          <div class="c-alert__content">
+            <div class="c-alert__title">Your project, understood.</div>
+            <div class="c-alert__message">The MCP adapts when Thicket is detected.</div>
+          </div>
+        </div>
       </div>
-      <div class="visual-footer"><span>PROJECT-ROOT SANDBOXED</span><span>READY TO BUILD <i></i></span></div>
-    </div>
+      <div class="visual-footer"><span>THOUGHTFULLY MADE FOR JEKYLL</span><span>GROW AT YOUR PACE <i></i></span></div>
+    </aside>
   </div>
   <div class="hero-accent" aria-hidden="true"></div>
 </section>

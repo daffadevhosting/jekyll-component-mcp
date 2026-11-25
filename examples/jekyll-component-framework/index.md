@@ -3,18 +3,17 @@ layout: default
 title: Home
 ---
 
-# Jekyll Component Framework
+# Thicket UI — Jekyll Component Garden
 
-Sample project used by **jekyll-component-mcp**.
+This fixture uses the Liquid components and design system from
+[Thicket UI](https://github.com/daffadevhosting/jekyll-component-framework).
 
-## Components
+## Examples
 
-- [Button]({{ '/examples/components/button/' | relative_url }})
-- [Card]({{ '/examples/components/card/' | relative_url }})
-- [Alert]({{ '/examples/components/alert/' | relative_url }})
-- [Header]({{ '/examples/components/header/' | relative_url }})
-- [Footer]({{ '/examples/components/footer/' | relative_url }})
+- [Button]({{ '/examples/components/button/' | relative_url }}) ·
+  [Card]({{ '/examples/components/card/' | relative_url }}) ·
+  [Alert]({{ '/examples/components/alert/' | relative_url }})
 
 ## Quick include
 
-{% include components/button.html label="Get started" variant="primary" href="/examples/components/button/" %}
+{% include components/button.html label="Explore components" variant="primary" href="/examples/components/button/" %}

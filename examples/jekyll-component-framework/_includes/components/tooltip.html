@@ -1,0 +1,26 @@
+{% comment %}
+  Tooltip Component
+
+  Parameters:
+  - text        (string, required)
+  - position    (string) → top|bottom|left|right, default: top
+  - class       (string)
+
+  Wrap content:
+  {% include components/tooltip.html text="Helpful tip" %}
+    ...content...
+  {% endinclude %}  ← not supported; use capture or pass content
+{% endcomment %}
+
+{% assign position = include.position | default: "top" %}
+
+<span class="c-tooltip {{ include.class | escape }}" data-tooltip>
+  {{ include.content }}
+  <span
+    class="c-tooltip__content c-tooltip__content--{{ position | escape }}"
+    role="tooltip"
+    data-tooltip-content
+  >
+    {{ include.text | escape }}
+  </span>
+</span>

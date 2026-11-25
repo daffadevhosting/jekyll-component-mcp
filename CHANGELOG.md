@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.7.0
+
+### Changed
+
+- Synced the Thicket UI example's Liquid includes, SCSS, and JavaScript with the component framework
+- Updated the example site and documentation to use Thicket conventions; projects without Thicket markers continue using standard Jekyll conventions
+
+## 1.6.0
+
+### Changed
+
+Update dependencies and add ESLint configuration
+
+Removed jekyll-component-mcp from dependencies in package.json
+Changed let to const for rootCandidate in environment.ts
+
+### Added
+
+Added Gemfile and Gemfile.lock for jekyll-component-framework example
+Added eslint and typescript-eslint to devDependencies
+Created new ESLint configuration file
+
 ## 1.5.0
 
 ### Added

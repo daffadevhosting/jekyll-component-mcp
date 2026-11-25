@@ -1,0 +1,55 @@
+// =============================================================================
+// Breadcrumb Component
+// =============================================================================
+
+.c-breadcrumb {
+  ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+
+    a {
+      color: var(--color-text-muted);
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      transition: color var(--transition-fast);
+
+      &:hover {
+        color: var(--color-primary);
+      }
+
+      &:focus-visible {
+        outline: var(--focus-ring-width) solid var(--color-focus-ring);
+        outline-offset: var(--focus-ring-offset);
+      }
+    }
+
+    &[aria-current="page"] {
+      color: var(--color-text);
+      font-weight: var(--font-weight-medium);
+    }
+  }
+
+  &__separator {
+    display: inline-flex;
+    color: var(--color-text-subtle);
+    user-select: none;
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
+  }
+}

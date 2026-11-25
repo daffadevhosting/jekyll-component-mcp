@@ -1,0 +1,47 @@
+{% comment %}
+  Reusable sidebar navigation groups.
+
+  Parameters:
+  - groups  (array)  → [{ title, items: [{ title, url, active? }] }]
+  - aria    (string) → aria-label for the <nav>, default: "Sidebar"
+  - class   (string) → extra classes on the nav
+
+  Prefer passing `groups` built in the parent via capture/assign,
+  or use site.data navigation structures.
+{% endcomment %}
+
+{% assign sidebar_aria = include.aria | default: "Sidebar" %}
+
+<nav class="l-sidebar-nav {{ include.class | escape }}" aria-label="{{ sidebar_aria | escape }}">
+  {% for group in include.groups %}
+    <div class="l-sidebar-nav__group">
+      {% if group.title and group.title != "" %}
+        <div class="l-sidebar-nav__title">{{ group.title | escape }}</div>
+      {% endif %}
+      {% for item in group.items %}
+        {% assign is_active = item.active %}
+        {% if is_active == nil and item.url and page.url == item.url %}
+          {% assign is_active = true %}
+        {% endif %}
+        {% capture safe_url %}{% include partials/safe-url.html url=item.url %}{% endcapture %}
+        {% assign safe_url = safe_url | strip %}
+        {% if safe_url != "" %}
+        <a
+          href="{{ safe_url | relative_url | escape }}"
+          class="l-sidebar-nav__link{% if is_active %} is-active{% endif %}"
+        >
+          {{ item.title | escape }}
+          {% if item.meta %}
+            <span class="l-sidebar-nav__meta">{{ item.meta | escape }}</span>
+          {% endif %}
+        </a>
+        {% else %}
+        <span class="l-sidebar-nav__link" aria-disabled="true" data-thicket-invalid-url="true">
+          {{ item.title | escape }}
+          {% if item.meta %}<span class="l-sidebar-nav__meta">{{ item.meta | escape }}</span>{% endif %}
+        </span>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endfor %}
+</nav>

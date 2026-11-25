@@ -1,0 +1,53 @@
+{% comment %}
+  Accordion Component
+
+  Parameters:
+  - id          (string, required) → unique accordion group id
+  - items       (array of {title, content, open})
+  - class       (string)
+
+  Usage with data:
+  {% include components/accordion.html id="faq" items=page.faq_items %}
+
+  Or pass items via capture / data file.
+{% endcomment %}
+
+{% assign accordion_id = include.id | default: "accordion" %}
+
+<div class="c-accordion {{ include.class | escape }}" data-accordion id="{{ accordion_id | escape }}">
+  {% for item in include.items %}
+    {% assign item_id = accordion_id | append: "-item-" | append: forloop.index %}
+    {% assign panel_id = item_id | append: "-panel" %}
+    {% assign is_open = item.open | default: false %}
+
+    <div class="c-accordion__item">
+      <span>
+        <button
+          type="button"
+          class="c-accordion__trigger"
+          id="{{ item_id | escape }}"
+          aria-expanded="{{ is_open | escape }}"
+          aria-controls="{{ panel_id | escape }}"
+          data-accordion-trigger
+        >
+          <span>{{ item.title | escape }}</span>
+          <span class="c-accordion__icon" aria-hidden="true">
+            {% include icon.html name="chevron-down" %}
+          </span>
+        </button>
+      </span>
+      <div
+        class="c-accordion__panel"
+        id="{{ panel_id | escape }}"
+        role="region"
+        aria-labelledby="{{ item_id | escape }}"
+        {% unless is_open %}hidden{% endunless %}
+        data-accordion-panel
+      >
+        <div class="c-accordion__content">
+          {{ item.content }}
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>

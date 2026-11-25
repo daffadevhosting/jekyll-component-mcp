@@ -1,52 +1,197 @@
-// Component: button
-.button {
+@use "../mixins";
+
+// =============================================================================
+// Button Component
+// =============================================================================
+
+.c-button {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
   font-family: var(--font-sans);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-none);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-base);
-  font-weight: 600;
-  line-height: var(--line-height-tight);
+  min-height: 2.5rem;
   text-decoration: none;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color var(--transition-fast), border-color var(--transition-fast),
-    color var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+
+  > :not(.c-button__ripple) {
+    position: relative;
+    z-index: 1;
+  }
 
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    @include mixins.focus-ring;
   }
 
-  &:disabled {
-    opacity: 0.55;
+  .c-button__ripple {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    clip-path: circle(0 at var(--ripple-x) var(--ripple-y));
+    animation: button-ripple 560ms ease-out forwards;
+  }
+
+  @keyframes button-ripple {
+    0% {
+      opacity: 0.22;
+      clip-path: circle(0 at var(--ripple-x) var(--ripple-y));
+    }
+
+    100% {
+      opacity: 0;
+      clip-path: circle(150% at var(--ripple-x) var(--ripple-y));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .c-button__ripple {
+      display: none;
+    }
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
   }
 
+  // Sizes
+  &--sm {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-sm);
+    min-height: 2rem;
+  }
+
+  &--md {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-base);
+    min-height: 2.5rem;
+  }
+
+  &--lg {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-lg);
+    min-height: 3rem;
+  }
+
+  // Variants
   &--primary {
     background-color: var(--color-primary);
-    color: #fff;
+    color: var(--color-text-inverse);
 
     &:hover:not(:disabled) {
       background-color: var(--color-primary-hover);
     }
+
+    &:active:not(:disabled) {
+      background-color: var(--color-primary-active);
+    }
   }
 
   &--secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-secondary-hover);
+    }
+
+    &:active:not(:disabled) {
+      background-color: var(--color-secondary-active);
+    }
+  }
+
+  &--outline {
     background-color: transparent;
-    border-color: var(--color-border);
+    border-color: var(--color-border-strong);
     color: var(--color-text);
 
     &:hover:not(:disabled) {
-      background-color: var(--color-bg-subtle);
+      background-color: var(--color-surface);
+      border-color: var(--color-border);
+    }
+  }
+
+  &--ghost {
+    background-color: transparent;
+    color: var(--color-text);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-surface);
     }
   }
 
   &--danger {
     background-color: var(--color-danger);
-    color: #fff;
+    color: var(--color-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-danger-hover);
+    }
+  }
+
+  &--success {
+    background-color: var(--color-success);
+    color: var(--color-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-success-hover);
+    }
+  }
+
+  // Full width
+  &--block {
+    display: flex;
+    width: 100%;
+  }
+
+  // Icon only
+  &--icon-only {
+    padding: var(--space-2);
+    aspect-ratio: 1;
+
+    &.c-button--sm {
+      padding: var(--space-1);
+      min-height: 2rem;
+      min-width: 2rem;
+    }
+
+    &.c-button--lg {
+      padding: var(--space-3);
+      min-height: 3rem;
+      min-width: 3rem;
+    }
+  }
+
+  // Icon positioning
+  .c-button__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+
+    svg {
+      width: 1em;
+      height: 1em;
+    }
   }
 }

@@ -1,0 +1,28 @@
+{% comment %}
+  FAQ Section (uses Accordion)
+
+  Parameters:
+  - title, subtitle
+  - items (array of {title, content, open})
+  - id
+{% endcomment %}
+
+<section class="s-faq l-section {{ include.class | escape }}">
+  <div class="l-container">
+    {% if include.title %}
+      <div class="s-faq__header">
+        <h2 class="s-faq__title">{{ include.title | escape }}</h2>
+        {% if include.subtitle %}
+          <p class="s-faq__subtitle">{{ include.subtitle | escape }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="s-faq__list">
+      {% include components/accordion.html
+        id=include.id
+        items=include.items
+      %}
+    </div>
+  </div>
+</section>

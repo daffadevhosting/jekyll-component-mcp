@@ -1,0 +1,134 @@
+{% comment %}
+  Select Component
+
+  Parameters:
+  - options (array of {value, label, selected})
+{% endcomment %}
+
+{% assign input_id = include.id | default: include.name %}
+{% assign label_id = input_id | append: "-label" %}
+{% assign value_id = input_id | append: "-value" %}
+{% assign listbox_id = input_id | append: "-listbox" %}
+{% assign selected_value = include.value | default: "" %}
+{% assign selected_label = "" %}
+{% assign selected_icon = "" %}
+{% assign selected_badge = "" %}
+{% assign selected_badge_variant = "neutral" %}
+{% for opt in include.options %}
+  {% if include.value and opt.value == include.value %}
+    {% assign selected_value = opt.value %}
+    {% assign selected_label = opt.label %}
+    {% assign selected_icon = opt.icon %}
+    {% assign selected_badge = opt.badge %}
+    {% assign selected_badge_variant = opt.badge_variant | default: "neutral" %}
+  {% elsif include.value == nil and opt.selected %}
+    {% assign selected_value = opt.value %}
+    {% assign selected_label = opt.label %}
+    {% assign selected_icon = opt.icon %}
+    {% assign selected_badge = opt.badge %}
+    {% assign selected_badge_variant = opt.badge_variant | default: "neutral" %}
+  {% endif %}
+{% endfor %}
+
+<div class="c-form-group c-select-menu {{ include.class | escape }}" data-select-menu>
+  {% if include.label %}
+    <label
+      id="{{ label_id | escape }}"
+        for="{{ input_id | escape }}"
+      class="c-label{% if include.required %} c-label--required{% endif %}"
+    >
+      {{ include.label | escape }}
+    </label>
+  {% endif %}
+
+  <select
+    id="{{ input_id | escape }}"
+    name="{{ include.name | escape }}"
+    class="c-select c-select-menu__native"
+    data-select-native
+    {% if include.required %}required{% endif %}
+    {% if include.disabled %}disabled{% endif %}
+    {% if include.error %}aria-invalid="true"{% endif %}
+    {% if include.error %}aria-describedby="{{ input_id | escape }}-error"{% elsif include.hint %}aria-describedby="{{ input_id | escape }}-hint"{% endif %}
+  >
+    {% if include.placeholder %}
+      <option value="" disabled {% unless selected_value %}selected{% endunless %}>
+        {{ include.placeholder | escape }}
+      </option>
+    {% endif %}
+    {% for opt in include.options %}
+      <option
+        value="{{ opt.value | escape }}"
+        {% if opt.value == selected_value %}selected{% endif %}
+        {% if opt.disabled %}disabled{% endif %}
+      >
+        {{ opt.label | escape }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <div class="c-select-menu__enhanced" data-select-enhanced hidden>
+    <button
+      id="{{ input_id | escape }}-control"
+      class="c-select-menu__trigger"
+      type="button"
+      role="combobox"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      aria-controls="{{ listbox_id | escape }}"
+      {% if include.label %}aria-labelledby="{{ label_id | escape }} {{ value_id | escape }}"{% else %}aria-label="{{ include.aria_label | default: include.name | escape }}"{% endif %}
+      {% if include.disabled %}disabled{% endif %}
+      {% if include.error %}aria-invalid="true"{% endif %}
+      {% if include.error %}aria-describedby="{{ input_id | escape }}-error"{% elsif include.hint %}aria-describedby="{{ input_id | escape }}-hint"{% endif %}
+      data-select-trigger
+    >
+      <span id="{{ value_id | escape }}" class="c-select-menu__value" data-select-value>
+        {% if selected_icon %}{% include icon.html name=selected_icon class="c-select-menu__icon" %}{% endif %}
+        <span>{{ selected_label | default: include.placeholder | default: "Choose an option" | escape }}</span>
+        {% if selected_badge %}<span class="c-badge c-badge--{{ selected_badge_variant | escape }}">{{ selected_badge | escape }}</span>{% endif %}
+      </span>
+      {% include icon.html name="chevron-down" class="c-select-menu__chevron" %}
+    </button>
+
+    <input type="hidden" value="{{ selected_value | escape }}" data-select-value-input disabled>
+
+    <ul
+      id="{{ listbox_id | escape }}"
+      class="c-select-menu__list"
+      role="listbox"
+      {% if include.label %}aria-labelledby="{{ label_id | escape }}"{% else %}aria-label="{{ include.aria_label | default: include.name | escape }}"{% endif %}
+      hidden
+      data-select-list
+    >
+      {% for opt in include.options %}
+        <li
+          id="{{ listbox_id | escape }}-option-{{ forloop.index0 | escape }}"
+          class="c-select-menu__option"
+          role="option"
+          aria-selected="{% if opt.value == selected_value %}true{% else %}false{% endif %}"
+          {% if opt.disabled %}aria-disabled="true"{% endif %}
+          {% if opt.variant %}data-variant="{{ opt.variant | escape }}"{% endif %}
+          data-value="{{ opt.value | escape }}"
+          data-select-option
+        >
+          <span class="c-select-menu__option-main" data-select-option-main>
+            {% if opt.icon %}{% include icon.html name=opt.icon class="c-select-menu__icon" %}{% endif %}
+            <span class="c-select-menu__option-label">{{ opt.label | escape }}</span>
+            {% if opt.badge %}<span class="c-badge c-badge--{{ opt.badge_variant | default: "neutral" | escape }}">{{ opt.badge | escape }}</span>{% endif %}
+          </span>
+          {% if opt.description %}<span class="c-select-menu__description">{{ opt.description | escape }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    {% if include.required %}<p class="c-error c-select-menu__error" data-select-error role="alert" hidden>Please choose an option.</p>{% endif %}
+  </div>
+
+  {% if include.hint and include.error == nil %}
+    <p id="{{ input_id | escape }}-hint" class="c-hint">{{ include.hint | escape }}</p>
+  {% endif %}
+
+  {% if include.error %}
+    <p id="{{ input_id | escape }}-error" class="c-error" role="alert">{{ include.error | escape }}</p>
+  {% endif %}
+</div>

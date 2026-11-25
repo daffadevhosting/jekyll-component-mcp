@@ -1,13 +1,17 @@
 <footer class="site-footer">
   <div class="container footer-inner">
-    <a class="brand footer-brand" href="{{ '/' | relative_url }}">
-      <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
-      <span>jekyll-component<span class="brand-light">-mcp</span></span>
+    <a class="brand footer-brand" href="{{ '/' | relative_url }}" aria-label="Thicket UI home">
+      <span class="brand-mark" aria-hidden="true"><img src="{{ '/assets/images/thicket-mark.svg' | relative_url }}" alt="" width="34" height="34"></span>
+      <span class="brand-copy">
+        <span class="brand-name">Thicket UI</span>
+        <span class="brand-light">Grown for Jekyll</span>
+      </span>
     </a>
-    <p>Made for thoughtful Jekyll component work.</p>
+    <p>A living component garden, with an AI assistant that knows your project.</p>
     <nav class="footer-links" aria-label="Footer navigation">
       <a href="{{ '/changelog/' | relative_url }}">Changelog</a>
-      <a href="{{ site.github_url }}">Open source on GitHub <span aria-hidden="true">↗</span></a>
+      <a href="{{ site.framework_url }}" target="_blank" rel="noopener noreferrer">Framework <span aria-hidden="true">↗</span></a>
+      <a href="{{ site.github_url }}" target="_blank" rel="noopener noreferrer">MCP on GitHub <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
 </footer>

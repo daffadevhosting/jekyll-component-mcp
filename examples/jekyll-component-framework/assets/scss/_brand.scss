@@ -1,0 +1,342 @@
+@use "mixins";
+
+// =============================================================================
+// Thicket brand - editorial component garden
+// =============================================================================
+
+@property --beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.u-border-beam,
+.c-card--border-beam {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--beam-angle),
+      transparent 0deg 286deg,
+      rgba(231, 197, 121, 0.18) 306deg,
+      #e7c579 326deg,
+      #fff0bd 336deg,
+      rgba(161, 196, 158, 0.72) 346deg,
+      transparent 360deg
+    );
+    content: "";
+    pointer-events: none;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    animation: border-beam-turn var(--border-beam-duration, 9s) linear infinite;
+  }
+}
+
+@keyframes border-beam-turn {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+
+.l-grid--cols-3 > .c-card--border-beam:nth-child(2) {
+  --border-beam-duration: 12s;
+}
+
+.l-grid--cols-3 > .c-card--border-beam:nth-child(3) {
+  --border-beam-duration: 15s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u-border-beam::before,
+  .c-card--border-beam::before {
+    animation: none;
+  }
+}
+
+.c-garden-hero {
+  padding-block: var(--space-6) var(--space-16);
+
+  @include mixins.respond-to(md) {
+    padding-block: var(--space-8) var(--space-20);
+  }
+}
+
+.c-garden-hero__frame {
+  position: relative;
+  display: grid;
+  min-height: 34rem;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-8);
+  overflow: hidden;
+  padding: clamp(2rem, 6vw, 5.5rem);
+  border: 1px solid rgba(250, 248, 240, 0.14);
+  border-radius: var(--radius-2xl) var(--radius-2xl) var(--radius-2xl) var(--radius-2xl);
+  background-color: var(--color-brand-forest);
+  background-image:
+    radial-gradient(ellipse at 82% 14%, rgba(231, 197, 121, 0.15), transparent 28rem),
+    linear-gradient(rgba(250, 248, 240, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(250, 248, 240, 0.035) 1px, transparent 1px);
+  background-size: auto, 3rem 3rem, 3rem 3rem;
+  box-shadow: var(--shadow-lg);
+  color: var(--color-brand-paper);
+
+  @include mixins.respond-to(lg) {
+    grid-template-columns: minmax(0, 1.05fr) minmax(20rem, 0.95fr);
+    gap: var(--space-4);
+  }
+}
+
+.c-garden-hero__copy {
+  position: relative;
+  z-index: 1;
+  max-width: 42rem;
+}
+
+.c-garden-hero__eyebrow,
+.c-garden-hero__edition {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: max-content;
+  color: rgba(250, 248, 240, 0.72);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.1em;
+  line-height: var(--line-height-normal);
+  text-transform: uppercase;
+}
+
+.c-garden-hero__eyebrow {
+  margin-bottom: var(--space-6);
+}
+
+.c-garden-hero__seed {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50% 50% 50% 0;
+  background: var(--color-brand-petal);
+  transform: rotate(-45deg);
+}
+
+.c-garden-hero__edition {
+  margin-bottom: var(--space-4);
+  color: var(--color-brand-petal);
+}
+
+.c-garden-hero__title {
+  max-width: 12ch;
+  margin: 0 0 var(--space-5);
+  color: var(--color-brand-paper);
+  font-family: var(--font-display);
+  font-size: clamp(3.25rem, 7vw, 6.5rem);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.065em;
+  line-height: 0.98;
+  text-wrap: balance;
+
+  em {
+    color: var(--color-brand-petal);
+    font-weight: var(--font-weight-normal);
+  }
+}
+
+.c-garden-hero__description {
+  max-width: 34rem;
+  margin: 0;
+  color: rgba(250, 248, 240, 0.78);
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: var(--line-height-relaxed);
+}
+
+.c-garden-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+
+  .c-button--garden {
+    border-color: var(--color-brand-petal);
+    background-color: var(--color-brand-petal);
+    color: var(--color-brand-forest);
+
+    &:hover:not(:disabled) {
+      border-color: #f0d99f;
+      background-color: #f0d99f;
+    }
+  }
+
+  .c-button--outline {
+    border-color: rgba(250, 248, 240, 0.42);
+    color: var(--color-brand-paper);
+
+    &:hover:not(:disabled) {
+      border-color: rgba(250, 248, 240, 0.7);
+      background-color: rgba(250, 248, 240, 0.08);
+    }
+  }
+}
+
+.c-garden-hero__art {
+  position: relative;
+  display: grid;
+  min-height: 22rem;
+  place-items: center;
+
+  @include mixins.respond-to(lg) {
+    min-height: 27rem;
+  }
+}
+
+.c-garden-hero__orbit {
+  position: absolute;
+  width: min(100%, 26rem);
+  aspect-ratio: 1;
+  border: 1px solid rgba(250, 248, 240, 0.19);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(250, 248, 240, 0.075) 0 1px, transparent 1.5px) 0 0 / 1.25rem 1.25rem,
+    radial-gradient(circle at center, rgba(231, 197, 121, 0.13), transparent 66%);
+
+  &::before,
+  &::after {
+    position: absolute;
+    inset: 11%;
+    border: 1px solid rgba(250, 248, 240, 0.13);
+    border-radius: 50%;
+    content: "";
+  }
+
+  &::after {
+    inset: 23%;
+    border-color: rgba(231, 197, 121, 0.26);
+  }
+}
+
+.c-garden-hero__logo {
+  position: relative;
+  z-index: 1;
+  width: clamp(5.5rem, 12vw, 8rem);
+  height: auto;
+  border: 0.55rem solid rgba(250, 248, 240, 0.08);
+  border-radius: 1.9rem;
+  box-shadow: 0 1.5rem 4rem rgba(6, 14, 9, 0.24);
+}
+
+.c-garden-hero__specimen {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 0.25rem;
+  min-width: 8.5rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid rgba(250, 248, 240, 0.25);
+  border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0.25rem;
+  background: rgba(32, 59, 45, 0.92);
+  box-shadow: 0 0.75rem 2rem rgba(6, 14, 9, 0.22);
+  backdrop-filter: blur(8px);
+
+  span {
+    color: var(--color-brand-petal);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    color: var(--color-brand-paper);
+    font-family: var(--font-display);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+  }
+
+  &--liquid {
+    top: 7%;
+    right: 2%;
+  }
+
+  &--scss {
+    top: 40%;
+    left: 0;
+  }
+
+  &--javascript {
+    right: 0;
+    bottom: 9%;
+  }
+}
+
+.c-garden-features {
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background:
+    radial-gradient(ellipse at 0 50%, rgba(40, 89, 67, 0.055), transparent 35rem),
+    var(--color-surface);
+}
+
+.c-garden-features__intro {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+
+  @include mixins.respond-to(md) {
+    grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.7fr);
+    align-items: end;
+    gap: var(--space-8);
+    margin-bottom: var(--space-10);
+  }
+}
+
+.c-garden-features__kicker {
+  margin: 0;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.c-garden-features__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+.c-garden-features__note {
+  max-width: 29rem;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .c-garden-hero__logo {
+    animation: garden-breathe 7s ease-in-out infinite;
+  }
+
+  @keyframes garden-breathe {
+    50% {
+      transform: translateY(-0.4rem) rotate(2deg);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .c-garden-hero__logo {
+    animation: none;
+  }
+}

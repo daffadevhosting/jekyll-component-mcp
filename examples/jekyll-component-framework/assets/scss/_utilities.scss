@@ -1,0 +1,371 @@
+@use "mixins";
+
+// =============================================================================
+// Utility Classes (lightweight, intentional — not a Tailwind clone)
+// =============================================================================
+
+$utility-space: (
+  0: var(--space-0),
+  1: var(--space-1),
+  2: var(--space-2),
+  3: var(--space-3),
+  4: var(--space-4),
+  5: var(--space-5),
+  6: var(--space-6),
+  8: var(--space-8),
+  10: var(--space-10),
+  12: var(--space-12),
+  16: var(--space-16),
+  20: var(--space-20),
+  24: var(--space-24)
+);
+
+$utility-spacing-properties: (
+  m: (margin),
+  mx: (margin-inline),
+  my: (margin-block),
+  mt: (margin-top),
+  mr: (margin-right),
+  mb: (margin-bottom),
+  ml: (margin-left),
+  p: (padding),
+  px: (padding-inline),
+  py: (padding-block),
+  pt: (padding-top),
+  pr: (padding-right),
+  pb: (padding-bottom),
+  pl: (padding-left)
+);
+
+@each $prefix, $properties in $utility-spacing-properties {
+  @each $step, $value in $utility-space {
+    .u-#{$prefix}-#{$step} {
+      @each $property in $properties {
+        #{$property}: $value !important;
+      }
+    }
+  }
+}
+
+// Display
+.u-hidden { display: none !important; }
+.u-block { display: block !important; }
+.u-inline { display: inline !important; }
+.u-inline-block { display: inline-block !important; }
+.u-flex { display: flex !important; }
+.u-inline-flex { display: inline-flex !important; }
+.u-grid { display: grid !important; }
+
+// Flex
+.u-flex-col { flex-direction: column !important; }
+.u-flex-row { flex-direction: row !important; }
+.u-flex-wrap { flex-wrap: wrap !important; }
+.u-items-start { align-items: flex-start !important; }
+.u-items-center { align-items: center !important; }
+.u-items-end { align-items: flex-end !important; }
+.u-items-stretch { align-items: stretch !important; }
+.u-justify-start { justify-content: flex-start !important; }
+.u-justify-center { justify-content: center !important; }
+.u-justify-end { justify-content: flex-end !important; }
+.u-justify-between { justify-content: space-between !important; }
+.u-justify-around { justify-content: space-around !important; }
+
+// Grid
+@for $column from 1 through 12 {
+  .u-grid-cols-#{$column} {
+    grid-template-columns: repeat($column, minmax(0, 1fr)) !important;
+  }
+
+  .u-col-span-#{$column} { grid-column: span $column / span $column !important; }
+}
+
+.u-col-span-full { grid-column: 1 / -1 !important; }
+.u-grid-flow-row { grid-auto-flow: row !important; }
+.u-grid-flow-col { grid-auto-flow: column !important; }
+
+@each $step, $value in $utility-space {
+  .u-gap-#{$step} { gap: $value !important; }
+  .u-gap-x-#{$step} { column-gap: $value !important; }
+  .u-gap-y-#{$step} { row-gap: $value !important; }
+}
+
+// Typography
+.u-font-sans { font-family: var(--font-sans) !important; }
+.u-font-display { font-family: var(--font-display) !important; }
+.u-font-mono { font-family: var(--font-mono) !important; }
+
+$utility-font-sizes: (
+  xs: var(--font-size-xs),
+  sm: var(--font-size-sm),
+  base: var(--font-size-base),
+  lg: var(--font-size-lg),
+  xl: var(--font-size-xl),
+  2xl: var(--font-size-2xl),
+  3xl: var(--font-size-3xl),
+  4xl: var(--font-size-4xl),
+  5xl: var(--font-size-5xl),
+  6xl: var(--font-size-6xl)
+);
+
+@each $name, $value in $utility-font-sizes {
+  .u-text-#{$name} { font-size: $value !important; }
+}
+
+.u-font-normal { font-weight: var(--font-weight-normal) !important; }
+.u-font-medium { font-weight: var(--font-weight-medium) !important; }
+.u-font-semibold { font-weight: var(--font-weight-semibold) !important; }
+.u-font-bold { font-weight: var(--font-weight-bold) !important; }
+
+.u-leading-none { line-height: var(--line-height-none) !important; }
+.u-leading-tight { line-height: var(--line-height-tight) !important; }
+.u-leading-snug { line-height: var(--line-height-snug) !important; }
+.u-leading-normal { line-height: var(--line-height-normal) !important; }
+.u-leading-relaxed { line-height: var(--line-height-relaxed) !important; }
+.u-leading-loose { line-height: var(--line-height-loose) !important; }
+
+.u-text-left { text-align: left !important; }
+.u-text-center { text-align: center !important; }
+.u-text-right { text-align: right !important; }
+.u-text-justify { text-align: justify !important; }
+
+$utility-text-colors: (
+  primary: var(--color-primary),
+  secondary: var(--color-secondary),
+  success: var(--color-success),
+  warning: var(--color-warning),
+  danger: var(--color-danger),
+  info: var(--color-info),
+  default: var(--color-text),
+  muted: var(--color-text-muted),
+  subtle: var(--color-text-subtle),
+  inverse: var(--color-text-inverse)
+);
+
+@each $name, $value in $utility-text-colors {
+  .u-text-#{$name} { color: $value !important; }
+}
+
+// Auto margins
+.u-m-auto { margin: auto !important; }
+.u-mx-auto { margin-inline: auto !important; }
+.u-my-auto { margin-block: auto !important; }
+
+// Width / Height
+.u-w-full { width: 100% !important; }
+.u-h-full { height: 100% !important; }
+.u-min-h-screen { min-height: 100vh !important; }
+
+// Border radius
+.u-rounded-none { border-radius: 0 !important; }
+.u-rounded-sm { border-radius: var(--radius-sm) !important; }
+.u-rounded { border-radius: var(--radius-md) !important; }
+.u-rounded-lg { border-radius: var(--radius-lg) !important; }
+.u-rounded-xl { border-radius: var(--radius-xl) !important; }
+.u-rounded-full { border-radius: var(--radius-full) !important; }
+
+// Shadow
+.u-shadow-none { box-shadow: none !important; }
+.u-shadow-sm { box-shadow: var(--shadow-sm) !important; }
+.u-shadow { box-shadow: var(--shadow-md) !important; }
+.u-shadow-lg { box-shadow: var(--shadow-lg) !important; }
+
+$utility-background-colors: (
+  "transparent": transparent,
+  background: var(--color-background),
+  surface: var(--color-surface),
+  surface-elevated: var(--color-surface-elevated),
+  primary: var(--color-primary),
+  primary-subtle: var(--color-primary-subtle),
+  secondary: var(--color-secondary),
+  secondary-subtle: var(--color-secondary-subtle),
+  success: var(--color-success),
+  success-subtle: var(--color-success-subtle),
+  warning: var(--color-warning),
+  warning-subtle: var(--color-warning-subtle),
+  danger: var(--color-danger),
+  danger-subtle: var(--color-danger-subtle),
+  info: var(--color-info),
+  info-subtle: var(--color-info-subtle)
+);
+
+@each $name, $value in $utility-background-colors {
+  .u-bg-#{$name} { background-color: $value !important; }
+}
+
+// Border
+.u-border { border: 1px solid var(--color-border) !important; }
+.u-border-0 { border: none !important; }
+.u-border-t { border-top: 1px solid var(--color-border) !important; }
+.u-border-b { border-bottom: 1px solid var(--color-border) !important; }
+
+$utility-border-colors: (
+  default: var(--color-border),
+  strong: var(--color-border-strong),
+  subtle: var(--color-border-subtle),
+  primary: var(--color-primary),
+  secondary: var(--color-secondary),
+  success: var(--color-success),
+  warning: var(--color-warning),
+  danger: var(--color-danger),
+  info: var(--color-info)
+);
+
+@each $name, $value in $utility-border-colors {
+  .u-border-#{$name} { border-color: $value !important; }
+}
+
+// Interaction states
+$utility-hover-background-colors: (
+  primary: var(--color-primary-hover),
+  secondary: var(--color-secondary-hover),
+  success: var(--color-success-hover),
+  warning: var(--color-warning-hover),
+  danger: var(--color-danger-hover),
+  info: var(--color-info-hover)
+);
+
+$utility-hover-text-colors: (
+  primary: var(--color-primary-hover),
+  secondary: var(--color-secondary-hover),
+  success: var(--color-success-hover),
+  warning: var(--color-warning-hover),
+  danger: var(--color-danger-hover),
+  info: var(--color-info-hover)
+);
+
+@each $name, $value in $utility-hover-background-colors {
+  .u-hover-bg-#{$name}:hover { background-color: $value !important; }
+}
+
+@each $name, $value in $utility-hover-text-colors {
+  .u-hover-text-#{$name}:hover { color: $value !important; }
+}
+
+.u-focus-visible-ring:focus-visible { @include mixins.focus-ring; }
+.u-focus-visible-ring-inset:focus-visible { @include mixins.focus-ring-inset; }
+.u-disabled-opacity-50:disabled { opacity: 0.5 !important; }
+.u-disabled-cursor-not-allowed:disabled { cursor: not-allowed !important; }
+
+@mixin dark-state-utilities {
+  @each $name, $value in $utility-text-colors {
+    .u-dark-text-#{$name} { color: $value !important; }
+  }
+
+  @each $name, $value in $utility-background-colors {
+    .u-dark-bg-#{$name} { background-color: $value !important; }
+  }
+
+  @each $name, $value in $utility-border-colors {
+    .u-dark-border-#{$name} { border-color: $value !important; }
+  }
+}
+
+[data-theme="dark"] {
+  @include dark-state-utilities;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) {
+    @include dark-state-utilities;
+  }
+}
+
+// Position
+.u-relative { position: relative !important; }
+.u-absolute { position: absolute !important; }
+.u-fixed { position: fixed !important; }
+.u-sticky { position: sticky !important; }
+
+// Float
+.u-float-left { float: left !important; }
+.u-float-right { float: right !important; }
+.u-float-none { float: none !important; }
+
+// Position offsets use the same spacing scale as margin and padding utilities.
+@each $step, $value in $utility-space {
+  .u-inset-#{$step} { inset: $value !important; }
+  .u-inset-x-#{$step} { inset-inline: $value !important; }
+  .u-inset-y-#{$step} { inset-block: $value !important; }
+  .u-top-#{$step} { top: $value !important; }
+  .u-right-#{$step} { right: $value !important; }
+  .u-bottom-#{$step} { bottom: $value !important; }
+  .u-left-#{$step} { left: $value !important; }
+}
+
+// Overflow
+.u-overflow-hidden { overflow: hidden !important; }
+.u-overflow-auto { overflow: auto !important; }
+
+// Cursor
+.u-cursor-pointer { cursor: pointer !important; }
+.u-cursor-not-allowed { cursor: not-allowed !important; }
+
+// Opacity
+.u-opacity-0 { opacity: 0 !important; }
+.u-opacity-50 { opacity: 0.5 !important; }
+.u-opacity-100 { opacity: 1 !important; }
+
+// Screen reader only
+.u-sr-only {
+  @include mixins.visually-hidden;
+}
+
+// Responsive variants are mobile-first and follow the configured breakpoints.
+@mixin responsive-utilities($breakpoint) {
+  @include mixins.respond-to($breakpoint) {
+    .u-#{$breakpoint}-hidden { display: none !important; }
+    .u-#{$breakpoint}-block { display: block !important; }
+    .u-#{$breakpoint}-inline { display: inline !important; }
+    .u-#{$breakpoint}-inline-block { display: inline-block !important; }
+    .u-#{$breakpoint}-flex { display: flex !important; }
+    .u-#{$breakpoint}-inline-flex { display: inline-flex !important; }
+    .u-#{$breakpoint}-grid { display: grid !important; }
+
+    .u-#{$breakpoint}-flex-row { flex-direction: row !important; }
+    .u-#{$breakpoint}-flex-col { flex-direction: column !important; }
+    .u-#{$breakpoint}-flex-wrap { flex-wrap: wrap !important; }
+    .u-#{$breakpoint}-items-start { align-items: flex-start !important; }
+    .u-#{$breakpoint}-items-center { align-items: center !important; }
+    .u-#{$breakpoint}-items-end { align-items: flex-end !important; }
+    .u-#{$breakpoint}-justify-start { justify-content: flex-start !important; }
+    .u-#{$breakpoint}-justify-center { justify-content: center !important; }
+    .u-#{$breakpoint}-justify-end { justify-content: flex-end !important; }
+    .u-#{$breakpoint}-justify-between { justify-content: space-between !important; }
+
+    @for $column from 1 through 12 {
+      .u-#{$breakpoint}-grid-cols-#{$column} {
+        grid-template-columns: repeat($column, minmax(0, 1fr)) !important;
+      }
+    }
+
+    @each $prefix, $properties in $utility-spacing-properties {
+      @each $step, $value in $utility-space {
+        .u-#{$breakpoint}-#{$prefix}-#{$step} {
+          @each $property in $properties {
+            #{$property}: $value !important;
+          }
+        }
+      }
+    }
+
+    @each $step, $value in $utility-space {
+      .u-#{$breakpoint}-gap-#{$step} { gap: $value !important; }
+      .u-#{$breakpoint}-gap-x-#{$step} { column-gap: $value !important; }
+      .u-#{$breakpoint}-gap-y-#{$step} { row-gap: $value !important; }
+    }
+
+    @each $name, $value in $utility-font-sizes {
+      .u-#{$breakpoint}-text-#{$name} { font-size: $value !important; }
+    }
+
+    .u-#{$breakpoint}-text-left { text-align: left !important; }
+    .u-#{$breakpoint}-text-center { text-align: center !important; }
+    .u-#{$breakpoint}-text-right { text-align: right !important; }
+  }
+}
+
+@include responsive-utilities(sm);
+@include responsive-utilities(md);
+@include responsive-utilities(lg);
+@include responsive-utilities(xl);
+@include responsive-utilities(2xl);

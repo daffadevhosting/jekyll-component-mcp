@@ -1,0 +1,45 @@
+{% comment %}
+  Breadcrumb Component
+
+  Parameters:
+  - items   (array of {label, url})  → last item is current page (no url or current: true)
+  - class   (string)
+  - id      (string)
+
+  Example:
+  items:
+    - label: Home
+      url: /
+    - label: Docs
+      url: /docs/
+    - label: Button
+{% endcomment %}
+
+<nav
+  class="c-breadcrumb {{ include.class | escape }}"
+  aria-label="{{ include.aria_label | default: 'Breadcrumb' | escape }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+>
+  <ol>
+    {% for item in include.items %}
+      {% capture safe_url %}{% include partials/safe-url.html url=item.url %}{% endcapture %}
+      {% assign safe_url = safe_url | strip %}
+      <li
+        class="c-breadcrumb__item"
+        {% if forloop.last %}aria-current="page"{% endif %}
+      >
+        {% unless forloop.first %}
+          <span class="c-breadcrumb__separator" aria-hidden="true">
+            {% include icon.html name="chevron-right" %}
+          </span>
+        {% endunless %}
+
+        {% if forloop.last or safe_url == "" %}
+          <span>{{ item.label | escape }}</span>
+        {% else %}
+          <a href="{{ safe_url | relative_url | escape }}">{{ item.label | escape }}</a>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</nav>

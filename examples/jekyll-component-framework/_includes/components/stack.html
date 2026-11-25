@@ -1,0 +1,14 @@
+{% comment %}
+  Stack Component
+
+  Parameters:
+  - size    (string) → xs, sm, md, lg, xl, 2xl
+  - content (string) → HTML content
+  - class   (string)
+{% endcomment %}
+
+{% assign size = include.size | default: "md" %}
+
+<div class="l-stack l-stack--{{ size | escape }}{% if include.class %} {{ include.class | escape }}{% endif %}">
+  {{ include.content }}
+</div>

@@ -1,0 +1,48 @@
+{% comment %}
+  Button Group Component
+
+  Parameters:
+  - items     (array of {label, href, variant, active, disabled})
+  - variant   (string)  → default variant for all buttons
+  - size      (string)
+  - vertical  (boolean)
+  - class     (string)
+
+  Or pass content via nested buttons in the calling page.
+  For simple cases, use items array.
+{% endcomment %}
+
+{% assign variant = include.variant | default: "outline" %}
+{% assign size = include.size | default: "md" %}
+
+{% capture group_classes %}
+  c-button-group
+  {% if include.vertical %}c-button-group--vertical{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign group_classes = group_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<div
+  class="{{ group_classes | escape }}"
+  role="group"
+  {% if include.aria_label %}aria-label="{{ include.aria_label | escape }}"{% endif %}
+>
+  {% if include.items %}
+    {% for item in include.items %}
+      {% assign item_variant = item.variant | default: variant %}
+      {% capture btn_extra %}
+        {% if item.active %}is-active{% endif %}
+      {% endcapture %}
+      {% include components/button.html
+        label=item.label
+        href=item.href
+        variant=item_variant
+        size=size
+        disabled=item.disabled
+        class=btn_extra
+      %}
+    {% endfor %}
+  {% else %}
+    {{ include.content }}
+  {% endif %}
+</div>

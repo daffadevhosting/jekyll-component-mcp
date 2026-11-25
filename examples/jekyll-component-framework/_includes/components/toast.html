@@ -1,0 +1,16 @@
+{% comment %}
+  Toast Container (place once in layout)
+
+  Parameters:
+  - position    (string) → top-right|top-left|bottom-right|bottom-left, default: top-right
+{% endcomment %}
+
+{% assign position = include.position | default: "top-right" %}
+
+<div
+  class="c-toast-container c-toast-container--{{ position | escape }}"
+  id="toast-container"
+  aria-live="polite"
+  aria-relevant="additions"
+  data-toast-container
+></div>

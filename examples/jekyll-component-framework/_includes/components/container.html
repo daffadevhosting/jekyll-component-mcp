@@ -1,0 +1,14 @@
+{% comment %}
+  Container Component
+
+  Parameters:
+  - size    (string) → sm, md, lg, xl, 2xl, full
+  - content (string) → HTML content
+  - class   (string)
+{% endcomment %}
+
+{% assign size = include.size | default: "xl" %}
+
+<div class="l-container{% if size != 'xl' %} l-container--{{ size | escape }}{% endif %}{% if include.class %} {{ include.class | escape }}{% endif %}">
+  {{ include.content }}
+</div>

@@ -1,0 +1,18 @@
+{% comment %}
+  Radio Component
+{% endcomment %}
+
+{% assign input_id = include.id | default: include.name | append: "-" | append: include.value %}
+
+<label class="c-radio {{ include.class | escape }}">
+  <input
+    type="radio"
+    id="{{ input_id | escape }}"
+    name="{{ include.name | escape }}"
+    value="{{ include.value | escape }}"
+    {% if include.checked %}checked{% endif %}
+    {% if include.required %}required{% endif %}
+    {% if include.disabled %}disabled{% endif %}
+  >
+  <span>{{ include.label | escape }}</span>
+</label>

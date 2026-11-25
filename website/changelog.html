@@ -10,11 +10,38 @@ permalink: /changelog/
     <header class="changelog-header">
       <p class="eyebrow"><span class="eyebrow-dot"></span> Release history</p>
       <h1>Changelog.</h1>
-      <p>Latest changes and features in jekyll-component-mcp.</p>
+      <p>Latest changes across Thicket UI and its Jekyll component assistant.</p>
       <a class="text-link" href="{{ site.github_url }}/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">View CHANGELOG.md on GitHub <span aria-hidden="true">↗</span></a>
     </header>
 
     <div class="changelog-list" aria-label="Release history">
+      <article class="release">
+        <div class="release-head">
+          <h2>1.7.0</h2>
+          <span class="release-badge">Latest</span>
+        </div>
+        <h3>Changed</h3>
+        <ul>
+          <li>Synced the Thicket UI example's Liquid includes, SCSS, and JavaScript with the component framework</li>
+          <li>Updated the example site and documentation to use Thicket conventions while keeping standard Jekyll projects framework-neutral</li>
+        </ul>
+      </article>
+
+      <article class="release">
+        <div class="release-head"><h2>1.6.0</h2></div>
+        <h3>Changed</h3>
+        <ul>
+          <li>Updated dependencies and added ESLint configuration</li>
+          <li>Removed <code>jekyll-component-mcp</code> from its own dependencies</li>
+          <li>Changed <code>let</code> to <code>const</code> for the environment root candidate</li>
+        </ul>
+        <h3>Added</h3>
+        <ul>
+          <li>Gemfile and Gemfile.lock for the framework example</li>
+          <li>ESLint and TypeScript ESLint development dependencies with a new configuration</li>
+        </ul>
+      </article>
+
       <article class="release">
         <div class="release-head">
           <h2>1.5.0</h2>

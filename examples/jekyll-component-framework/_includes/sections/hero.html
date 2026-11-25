@@ -1,0 +1,84 @@
+{% comment %}
+  Hero Section
+
+  Parameters:
+  - eyebrow, title, subtitle
+  - primary_label, primary_href
+  - secondary_label, secondary_href
+  - media, media_alt
+  - variant (default|split)
+  - class
+  - stats (array of {value, label})
+{% endcomment %}
+
+{% assign variant = include.variant | default: "default" %}
+{% assign heading_level = include.heading_level | default: 1 | plus: 0 %}
+{% if heading_level < 1 or heading_level > 6 %}
+  {% assign heading_level = 1 %}
+{% endif %}
+{% assign heading_tag = "h" | append: heading_level %}
+{% capture safe_media %}{% include partials/safe-url.html url=include.media %}{% endcapture %}
+{% assign safe_media = safe_media | strip %}
+
+<section class="s-hero s-hero--{{ variant | escape }} l-section {{ include.class | escape }}">
+  <div class="l-container">
+    <div class="s-hero__inner">
+      <div class="s-hero__content">
+        {% if include.eyebrow %}
+          <p class="s-hero__eyebrow">{{ include.eyebrow | escape }}</p>
+        {% endif %}
+
+        <{{ heading_tag | escape }} class="s-hero__title">{{ include.title | escape }}</{{ heading_tag | escape }}>
+
+        {% if include.subtitle %}
+          <p class="s-hero__subtitle">{{ include.subtitle | escape }}</p>
+        {% endif %}
+
+        {% if include.primary_label or include.secondary_label %}
+          <div class="s-hero__actions">
+            {% if include.primary_label %}
+              {% include components/button.html
+                label=include.primary_label
+                href=include.primary_href
+                variant="primary"
+                size="lg"
+              %}
+            {% endif %}
+            {% if include.secondary_label %}
+              {% include components/button.html
+                label=include.secondary_label
+                href=include.secondary_href
+                variant="outline"
+                size="lg"
+              %}
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if include.stats %}
+          <dl class="s-hero__stats">
+            {% for stat in include.stats %}
+              <div class="s-hero__stat">
+                <dt>{{ stat.label | escape }}</dt>
+                <dd>{{ stat.value | escape }}</dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% endif %}
+      </div>
+
+      {% if safe_media != "" %}
+        <div class="s-hero__media">
+          <img
+            src="{{ safe_media | relative_url | escape }}"
+            alt="{{ include.media_alt | default: '' | escape }}"
+            width="1200"
+            height="675"
+            loading="eager"
+            decoding="async"
+          >
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>

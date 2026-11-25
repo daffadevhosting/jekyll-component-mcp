@@ -1,0 +1,41 @@
+{% comment %}
+  Testimonials Section
+
+  Parameters:
+  - title
+  - items (array of {quote, name, role, avatar, initials})
+{% endcomment %}
+
+<section class="s-testimonials l-section {{ include.class | escape }}">
+  <div class="l-container">
+    {% if include.title %}
+      <div class="s-testimonials__header">
+        <h2 class="s-testimonials__title">{{ include.title | escape }}</h2>
+      </div>
+    {% endif %}
+
+    <div class="s-testimonials__grid">
+      {% for item in include.items %}
+        <blockquote class="c-testimonial">
+          <p class="c-testimonial__quote">{{ item.quote | escape }}</p>
+          <footer class="c-testimonial__author">
+            {% if item.avatar or item.initials %}
+              {% include components/avatar.html
+                src=item.avatar
+                initials=item.initials
+                alt=item.name
+                size="sm"
+              %}
+            {% endif %}
+            <div class="c-testimonial__info">
+              <cite class="c-testimonial__name">{{ item.name | escape }}</cite>
+              {% if item.role %}
+                <span class="c-testimonial__role">{{ item.role | escape }}</span>
+              {% endif %}
+            </div>
+          </footer>
+        </blockquote>
+      {% endfor %}
+    </div>
+  </div>
+</section>

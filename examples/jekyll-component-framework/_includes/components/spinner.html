@@ -1,0 +1,29 @@
+{% comment %}
+  Spinner Component
+
+  Parameters:
+  - size      (string)  → sm|md|lg, default: md
+  - variant   (string)  → primary|secondary|inverse, default: primary
+  - label     (string)  → accessible label, default: "Loading"
+  - block     (boolean)
+  - class     (string)
+{% endcomment %}
+
+{% assign size = include.size | default: "md" %}
+{% assign variant = include.variant | default: "primary" %}
+{% assign label = include.label | default: "Loading" %}
+
+{% capture spinner_classes %}
+  c-spinner
+  c-spinner--{{ size | escape }}
+  c-spinner--{{ variant | escape }}
+  {% if include.block %}c-spinner--block{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign spinner_classes = spinner_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<span
+  class="{{ spinner_classes | escape }}"
+  role="status"
+  aria-label="{{ label | escape }}"
+></span>

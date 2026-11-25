@@ -1,0 +1,48 @@
+{% comment %}
+  Code Block Component
+
+  Parameters:
+  - code        (string)  → code content (escape manually or use capture)
+  - language    (string)  → e.g. liquid, html, scss, js
+  - copyable    (boolean) → show copy button, default: true
+  - class       (string)
+  - id          (string)
+
+  Prefer passing code via capture to avoid escaping issues:
+  {% capture my_code %}
+  ...code...
+  {% endcapture %}
+  {% include components/code.html code=my_code language="liquid" %}
+{% endcomment %}
+
+{% assign copyable = include.copyable | default: true %}
+{% assign lang = include.language | default: "" %}
+
+<div
+  class="c-code {{ include.class | escape }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+  data-code-block
+>
+  {% if lang != "" or copyable %}
+    <div class="c-code__header">
+      {% if lang != "" %}
+        <span class="c-code__lang">{{ lang | escape }}</span>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if copyable %}
+        <button
+          type="button"
+          class="c-code__copy"
+          data-code-copy
+          aria-label="Copy code"
+        >
+          {% include icon.html name="copy" %}
+          <span data-code-copy-label aria-live="polite">Copy</span>
+        </button>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <pre class="c-code__body"><code{% if lang != "" %} class="language-{{ lang | escape }}"{% endif %}>{{ include.code | escape }}</code></pre>
+</div>

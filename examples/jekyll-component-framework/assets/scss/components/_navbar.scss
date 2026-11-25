@@ -1,0 +1,175 @@
+@use "../mixins";
+
+// =============================================================================
+// Navbar Component
+// =============================================================================
+
+.c-navbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background-color: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color var(--transition-theme), border-color var(--transition-theme);
+
+  &--transparent {
+    background-color: transparent;
+    border-bottom-color: transparent;
+  }
+
+  &--elevated {
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.c-navbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 4rem;
+  padding-block: var(--space-2);
+}
+
+.c-navbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text);
+  text-decoration: none;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+    border-radius: var(--radius-sm);
+  }
+}
+
+.c-navbar__brand-mark {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.c-navbar__brand-copy {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.c-navbar__brand-name {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.c-navbar__brand-note {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.c-navbar__nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-1);
+
+  @include mixins.respond-to(lg) {
+    display: flex;
+  }
+}
+
+.c-navbar__link {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-text);
+    background-color: var(--color-surface);
+  }
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+  }
+
+  &--active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-subtle);
+  }
+}
+
+.c-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+// Mobile toggle
+.c-navbar__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+
+  @include mixins.respond-to(lg) {
+    display: none;
+  }
+
+  &:hover {
+    background-color: var(--color-surface);
+  }
+
+  &:focus-visible {
+    @include mixins.focus-ring;
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
+// Mobile menu
+.c-navbar__mobile {
+  display: none;
+  padding-block: var(--space-4);
+  border-top: 1px solid var(--color-border);
+
+  &.is-open {
+    display: block;
+  }
+
+  @include mixins.respond-to(lg) {
+    display: none !important;
+  }
+
+  .c-navbar__link {
+    display: flex;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+  }
+}

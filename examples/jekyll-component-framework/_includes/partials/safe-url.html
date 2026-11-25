@@ -1,0 +1,15 @@
+{%- assign candidate_url = include.url | default: "" | strip -%}
+{%- assign first_segment = candidate_url | split: "/" | first -%}
+{%- assign url_prefix = candidate_url | slice: 0, 2 -%}
+{%- assign safe_url = false -%}
+{%- if candidate_url != "" and url_prefix != "//" -%}
+  {%- if first_segment contains ":" -%}
+    {%- assign url_scheme = first_segment | split: ":" | first | downcase -%}
+    {%- if url_scheme == "http" or url_scheme == "https" or url_scheme == "mailto" or url_scheme == "tel" -%}
+      {%- assign safe_url = true -%}
+    {%- endif -%}
+  {%- else -%}
+    {%- assign safe_url = true -%}
+  {%- endif -%}
+{%- endif -%}
+{%- if safe_url -%}{{- candidate_url -}}{%- endif -%}

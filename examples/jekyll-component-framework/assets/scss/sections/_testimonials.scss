@@ -1,0 +1,97 @@
+@use "../mixins";
+
+// =============================================================================
+// Testimonials Section
+// =============================================================================
+
+.s-testimonials {
+  &__header {
+    text-align: center;
+    max-width: 36rem;
+    margin-inline: auto;
+    margin-bottom: var(--space-12);
+  }
+
+  &__title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    margin-bottom: var(--space-4);
+
+    @include mixins.respond-to(md) {
+      font-size: var(--font-size-4xl);
+    }
+  }
+
+  &__grid {
+    display: grid;
+    gap: var(--space-6);
+
+    @include mixins.respond-to(md) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @include mixins.respond-to(lg) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}
+
+.c-testimonial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+
+  &__quote {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    color: var(--color-text);
+    flex: 1;
+
+    &::before {
+      content: "\201C";
+      font-size: 2em;
+      line-height: 0;
+      vertical-align: -0.3em;
+      color: var(--color-primary);
+      margin-right: 0.1em;
+    }
+  }
+
+  &__author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  &__role {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+}
+ .togglr-component-example {
+  display: flex;
+  width: 48px;
+  height: 48px;
+  border: solid 1px var(--color-border);
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}

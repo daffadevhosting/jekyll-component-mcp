@@ -1,0 +1,62 @@
+{% comment %}
+  Offcanvas Component
+
+  Parameters:
+  - id        (string, required)
+  - title     (string, required)
+  - position  (string) → left|right, default: right
+  - content   (string) → panel body HTML
+  - footer    (string) → optional footer HTML
+  - class     (string) → extra panel classes
+
+  Trigger from outside with data-offcanvas-open="<id>".
+{% endcomment %}
+
+{% assign offcanvas_id = include.id %}
+{% assign position = include.position | default: "right" %}
+{% unless position == "left" or position == "right" %}
+  {% assign position = "right" %}
+{% endunless %}
+
+<div
+  class="c-offcanvas-backdrop"
+  id="{{ offcanvas_id | escape }}-backdrop"
+  data-offcanvas-backdrop="{{ offcanvas_id | escape }}"
+  hidden
+  aria-hidden="true"
+></div>
+
+<aside
+  class="c-offcanvas c-offcanvas--{{ position | escape }} {{ include.class | escape }}"
+  id="{{ offcanvas_id | escape }}"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ offcanvas_id | escape }}-title"
+  tabindex="-1"
+  hidden
+  data-offcanvas
+>
+  <div class="c-offcanvas__header">
+    <h2 class="c-offcanvas__title" id="{{ offcanvas_id | escape }}-title">
+      {{ include.title | escape }}
+    </h2>
+    <button
+      type="button"
+      class="c-offcanvas__close"
+      aria-label="Close panel"
+      data-offcanvas-close
+    >
+      {% include icon.html name="x" %}
+    </button>
+  </div>
+
+  <div class="c-offcanvas__body">
+    {{ include.content }}
+  </div>
+
+  {% if include.footer %}
+    <div class="c-offcanvas__footer">
+      {{ include.footer }}
+    </div>
+  {% endif %}
+</aside>

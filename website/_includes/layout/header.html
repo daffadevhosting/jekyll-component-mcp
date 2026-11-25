@@ -1,14 +1,20 @@
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href="{{ '/' | relative_url }}" aria-label="{{ site.title }}">
-      <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
-      <span>jekyll-component<span class="brand-light">-mcp</span></span>
+    <a class="brand" href="{{ '/' | relative_url }}" aria-label="Thicket UI home">
+      <span class="brand-mark" aria-hidden="true"><img src="{{ '/assets/images/thicket-mark.svg' | relative_url }}" alt="" width="42" height="42"></span>
+      <span class="brand-copy">
+        <span class="brand-name">Jekyll Component MCP x Thicket UI</span>
+        <span class="brand-light">Jekyll component garden</span>
+      </span>
     </a>
-    <nav class="site-nav" aria-label="Main navigation">
+    <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="primary-navigation">
+      <span></span><span></span>
+    </button>
+    <nav class="site-nav" id="primary-navigation" aria-label="Main navigation">
       {% for item in site.data.navigation %}
         <a href="{{ item.url | relative_url }}">{{ item.label }}</a>
       {% endfor %}
-      <a class="nav-github" href="{{ site.github_url }}" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+      <a class="nav-github" href="{{ site.npm_url }}" target="_blank" rel="noopener noreferrer">Get the MCP <span aria-hidden="true">↗</span></a>
       <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
         <svg class="theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.2 15.4A8.3 8.3 0 0 1 8.6 3.8 8.4 8.4 0 1 0 20.2 15.4Z"/></svg>
         <svg class="theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>

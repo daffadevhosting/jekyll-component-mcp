@@ -1,0 +1,134 @@
+// =============================================================================
+// Animation System
+// Respects prefers-reduced-motion
+// =============================================================================
+
+// Keyframes
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+// Animation utility classes
+.a-fade {
+  animation: fade-in var(--transition-slow) ease both;
+}
+
+.a-fade-up {
+  animation: fade-up var(--transition-slow) ease both;
+}
+
+.a-fade-down {
+  animation: fade-down var(--transition-slow) ease both;
+}
+
+.a-scale {
+  animation: scale-in var(--transition-slow) ease both;
+}
+
+.a-slide-right {
+  animation: slide-in-right var(--transition-slow) ease both;
+}
+
+.a-slide-left {
+  animation: slide-in-left var(--transition-slow) ease both;
+}
+
+.a-spin {
+  animation: spin 1s linear infinite;
+}
+
+.a-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+// Delay utilities
+.a-delay-100 { animation-delay: 100ms; }
+.a-delay-200 { animation-delay: 200ms; }
+.a-delay-300 { animation-delay: 300ms; }
+.a-delay-400 { animation-delay: 400ms; }
+.a-delay-500 { animation-delay: 500ms; }
+
+// Reduced motion: disable decorative animations
+@media (prefers-reduced-motion: reduce) {
+  .a-fade,
+  .a-fade-up,
+  .a-fade-down,
+  .a-scale,
+  .a-slide-right,
+  .a-slide-left {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .a-spin,
+  .a-pulse {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,0 +1,35 @@
+{% comment %}
+  Textarea Component
+{% endcomment %}
+
+{% assign input_id = include.id | default: include.name %}
+
+<div class="c-form-group {{ include.class | escape }}">
+  {% if include.label %}
+    <label
+      for="{{ input_id | escape }}"
+      class="c-label{% if include.required %} c-label--required{% endif %}"
+    >
+      {{ include.label | escape }}
+    </label>
+  {% endif %}
+
+  <textarea
+    id="{{ input_id | escape }}"
+    name="{{ include.name | escape }}"
+    class="c-textarea"
+    rows="{{ include.rows | default: 4 | escape }}"
+    {% if include.placeholder %}placeholder="{{ include.placeholder | escape }}"{% endif %}
+    {% if include.required %}required{% endif %}
+    {% if include.disabled %}disabled{% endif %}
+    {% if include.error %}aria-invalid="true" aria-describedby="{{ input_id | escape }}-error"{% endif %}
+  >{{ include.value | escape }}</textarea>
+
+  {% if include.hint and include.error == nil %}
+    <p class="c-hint">{{ include.hint | escape }}</p>
+  {% endif %}
+
+  {% if include.error %}
+    <p class="c-error" id="{{ input_id | escape }}-error" role="alert">{{ include.error | escape }}</p>
+  {% endif %}
+</div>

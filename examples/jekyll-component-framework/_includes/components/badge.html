@@ -1,0 +1,28 @@
+{% comment %}
+  Badge Component
+
+  Parameters:
+  - label       (string, required)
+  - variant     (string)  → primary|secondary|success|warning|danger|info|neutral, default: primary
+  - size        (string)  → sm|md|lg, default: md
+  - dot         (boolean)
+  - class       (string)
+{% endcomment %}
+
+{% assign variant = include.variant | default: "primary" %}
+{% assign size = include.size | default: "md" %}
+
+{% capture badge_classes %}
+  c-badge
+  c-badge--{{ variant | escape }}
+  {% if size != "md" %}c-badge--{{ size | escape }}{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign badge_classes = badge_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<span class="{{ badge_classes | escape }}">
+  {% if include.dot %}
+    <span class="c-badge__dot" aria-hidden="true"></span>
+  {% endif %}
+  {{ include.label | escape }}
+</span>

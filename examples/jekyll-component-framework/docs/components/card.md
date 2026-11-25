@@ -1,50 +1,57 @@
 ---
-title: card
+layout: default
+title: Card
+description: Card component documentation
+permalink: /docs/components/card/
 ---
 
-# card
+# Card
 
-## Overview
-
-Content container with optional title, body, and footer.
+Container for grouped content — title, body, media, and footer.
 
 ## Usage
 
 ```liquid
-{% include components/card.html title="Plan" body="Details here" variant="featured" %}
+{% raw %}{% include components/card.html
+   title="Feature"
+   subtitle="Optional subtitle"
+   body="Description text goes here."
+   elevated=true
+   hoverable=true
+   glare=true
+   border_beam=true
+%}{% endraw %}
 ```
 
 ## Parameters
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| title | string | `""` | Card heading |
-| body | string | `""` | Main body text |
-| content | string | — | Trusted nested HTML content |
-| footer | string | — | Trusted HTML for the footer region |
-| variant | string | `"default"` | default, elevated, featured |
-| class | string | `""` | Extra CSS classes |
-| id | string | — | Optional element id |
-
-## Variants
-
-- `default`
-- `elevated`
-- `featured`
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | string | — | Card heading |
+| `subtitle` | string | — | Secondary text under title |
+| `body` | HTML | — | Trusted HTML for the main content |
+| `content` | HTML | — | Trusted HTML body alternative |
+| `footer` | HTML | — | Trusted HTML footer content |
+| `media` | string | — | Image URL |
+| `media_alt` | string | `""` | Image alt text |
+| `hoverable` | boolean | false | Lift and elevate on hover |
+| `glare` | boolean | false | Show pointer-tracked glare on hover/focus |
+| `border_beam` | boolean | false | Add a slow animated border accent |
+| `elevated` | boolean | false | Stronger shadow |
+| `borderless` | boolean | false | No border |
+| `class` | string | — | Extra classes |
+| `id` | string | — | Element id |
 
 ## Example
 
-See `examples/components/card.html`.
+<div class="l-grid l-grid--cols-2 u-mb-6">
+{% include components/card.html title="Elevated" body="Card with elevated shadow." elevated=true %}
+{% include components/card.html title="Hoverable + glare" body="Move the pointer over this card." hoverable=true glare=true %}
+{% include components/card.html title="Border beam" body="A featured card with a warm border accent." border_beam=true %}
+</div>
 
 ## Accessibility
 
-- Uses `<article>` for independent content
-- Title rendered as heading for structure
+Uses `<article>` semantics. Provide meaningful titles. Decorative images should use empty `alt`.
 
-## Security
-
-The title and body are HTML-escaped. `content` and `footer` are rendered as HTML and should only contain trusted markup.
-
-## Notes
-
-Part of the sample Jekyll Component Framework.
+The `body`, `content`, and `footer` slots render unescaped HTML. Only pass trusted markup from templates or trusted project data.

@@ -1,0 +1,27 @@
+{% assign site_root_url = "/" | absolute_url %}
+{% assign organization_id = site_root_url | append: "#organization" %}
+{% assign site_logo_path = site.data.site.logo | default: site.logo %}
+{% assign same_as_links = site.data.site.same_as | default: empty %}
+{% if site_logo_path %}
+  {% assign site_logo_url = site_logo_path | absolute_url %}
+{% endif %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": {{ organization_id | jsonify }},
+  "name": {{ site.data.site.name | default: site.title | jsonify }},
+  "url": {{ site_root_url | jsonify }}{% if site.data.site.description %},
+  "description": {{ site.data.site.description | jsonify }}{% endif %}{% if site_logo_url %},
+  "logo": {
+    "@type": "ImageObject",
+    "url": {{ site_logo_url | jsonify }}
+  }{% endif %}{% if same_as_links.size > 0 %},
+  "sameAs": [
+    {% for profile_url in same_as_links %}
+      {{ profile_url | jsonify }}{% unless forloop.last %},{% endunless %}
+    {% endfor %}
+  ]{% endif %}
+}
+</script>

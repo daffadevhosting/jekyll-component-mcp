@@ -1,0 +1,51 @@
+{% comment %}
+  Avatar Component
+
+  Parameters:
+  - src         (string)  → image URL
+  - alt         (string)
+  - initials    (string)  → fallback text
+  - size        (string)  → xs|sm|md|lg|xl, default: md
+  - shape       (string)  → circle|square, default: circle
+  - status      (string)  → online|offline|busy|away
+  - class       (string)
+  - id          (string)
+{% endcomment %}
+
+{% assign size = include.size | default: "md" %}
+{% assign shape = include.shape | default: "circle" %}
+{% capture safe_src %}{% include partials/safe-url.html url=include.src %}{% endcapture %}
+{% assign safe_src = safe_src | strip %}
+
+{% capture avatar_classes %}
+  c-avatar
+  c-avatar--{{ size | escape }}
+  {% if shape == "square" %}c-avatar--square{% endif %}
+  {% if include.status %}c-avatar--with-status{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign avatar_classes = avatar_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<span
+  class="{{ avatar_classes | escape }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+  role="img"
+  {% if include.alt %}aria-label="{{ include.alt | escape }}"{% elsif include.initials %}aria-label="{{ include.initials | escape }}"{% endif %}
+>
+  {% if safe_src != "" %}
+    <img
+      src="{{ safe_src | relative_url | escape }}"
+      alt="{{ include.alt | default: '' | escape }}"
+      loading="lazy"
+      decoding="async"
+    >
+  {% elsif include.initials %}
+    {{ include.initials | upcase | truncate: 2, "" | escape }}
+  {% else %}
+    {% include icon.html name="user" %}
+  {% endif %}
+
+  {% if include.status %}
+    <span class="c-avatar__status c-avatar__status--{{ include.status | escape }}" aria-hidden="true"></span>
+  {% endif %}
+</span>

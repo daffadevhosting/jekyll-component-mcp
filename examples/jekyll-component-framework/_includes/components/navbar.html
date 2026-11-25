@@ -1,0 +1,106 @@
+{% comment %}
+  Navbar Component
+
+  Parameters:
+  - brand       (string)  → site name
+  - brand_url   (string)
+  - brand_mark  (string)  → optional logo image URL
+  - transparent (boolean)
+  - elevated    (boolean)
+  - menu_id     (string)  → mobile menu id, default: mobile-menu
+  - class       (string)
+{% endcomment %}
+
+{% assign brand = include.brand | default: site.title %}
+{% assign brand_url = include.brand_url | default: "/" %}
+{% assign brand_mark = include.brand_mark %}
+{% assign mobile_menu_id = include.menu_id | default: "mobile-menu" %}
+{% capture safe_brand_url %}{% include partials/safe-url.html url=brand_url %}{% endcapture %}
+{% assign safe_brand_url = safe_brand_url | strip %}
+{% capture safe_brand_mark %}{% include partials/safe-url.html url=brand_mark %}{% endcapture %}
+{% assign safe_brand_mark = safe_brand_mark | strip %}
+
+{% capture nav_classes %}
+  c-navbar
+  {% if include.transparent %}c-navbar--transparent{% endif %}
+  {% if include.elevated %}c-navbar--elevated{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign nav_classes = nav_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<header class="{{ nav_classes | escape }}" role="banner">
+  <div class="l-container">
+    <div class="c-navbar__inner">
+      {% if safe_brand_url != "" %}
+      <a href="{{ safe_brand_url | relative_url | escape }}" class="c-navbar__brand">
+      {% else %}
+      <span class="c-navbar__brand" aria-disabled="true" data-thicket-invalid-url="true">
+      {% endif %}
+        {% if safe_brand_mark != "" %}
+          <img
+            class="c-navbar__brand-mark"
+            src="{{ safe_brand_mark | relative_url | escape }}"
+            alt=""
+            width="40"
+            height="40"
+          >
+        {% endif %}
+        <span class="c-navbar__brand-copy">
+          <span class="c-navbar__brand-name">{{ brand | escape }}</span>
+          <span class="c-navbar__brand-note">Jekyll component garden</span>
+        </span>
+      {% if safe_brand_url != "" %}</a>{% else %}</span>{% endif %}
+
+      <nav class="c-navbar__nav" aria-label="Main navigation">
+        {% for item in site.data.navigation.main %}
+          {% capture safe_nav_url %}{% include partials/safe-url.html url=item.url %}{% endcapture %}
+          {% assign safe_nav_url = safe_nav_url | strip %}
+          {% if safe_nav_url != "" %}
+          <a
+            href="{{ safe_nav_url | relative_url | escape }}"
+            class="c-navbar__link{% if page.url == item.url %} c-navbar__link--active{% endif %}"
+          >
+            {{ item.title | escape }}
+          </a>
+          {% else %}
+          <span class="c-navbar__link" aria-disabled="true" data-thicket-invalid-url="true">{{ item.title | escape }}</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+
+      <div class="c-navbar__actions">
+        {% include components/theme-toggle.html %}
+
+        <button
+          type="button"
+          class="c-navbar__toggle"
+          aria-label="Toggle menu"
+          aria-expanded="false"
+          aria-controls="{{ mobile_menu_id | escape }}"
+          data-navbar-toggle
+        >
+          {% include icon.html name="menu" %}
+        </button>
+      </div>
+    </div>
+
+    <div class="c-navbar__mobile" id="{{ mobile_menu_id | escape }}" hidden>
+      <nav aria-label="Mobile navigation">
+        {% for item in site.data.navigation.main %}
+          {% capture safe_mobile_url %}{% include partials/safe-url.html url=item.url %}{% endcapture %}
+          {% assign safe_mobile_url = safe_mobile_url | strip %}
+          {% if safe_mobile_url != "" %}
+          <a
+            href="{{ safe_mobile_url | relative_url | escape }}"
+            class="c-navbar__link{% if page.url == item.url %} c-navbar__link--active{% endif %}"
+          >
+            {{ item.title | escape }}
+          </a>
+          {% else %}
+          <span class="c-navbar__link" aria-disabled="true" data-thicket-invalid-url="true">{{ item.title | escape }}</span>
+          {% endif %}
+        {% endfor %}
+      </nav>
+    </div>
+  </div>
+</header>

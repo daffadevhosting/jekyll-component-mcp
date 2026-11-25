@@ -1,0 +1,70 @@
+{% comment %}
+  Pricing Section
+
+  Parameters:
+  - title, subtitle
+  - plans (array of {name, price, period, description, features[], cta_label, cta_href, featured, badge})
+{% endcomment %}
+
+<section class="s-pricing l-section {{ include.class | escape }}">
+  <div class="l-container">
+    {% if include.title %}
+      <div class="s-pricing__header">
+        <h2 class="s-pricing__title">{{ include.title | escape }}</h2>
+        {% if include.subtitle %}
+          <p class="s-pricing__subtitle">{{ include.subtitle | escape }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="s-pricing__grid">
+      {% for plan in include.plans %}
+        {% if plan.featured %}
+          {% assign btn_variant = "primary" %}
+        {% else %}
+          {% assign btn_variant = "outline" %}
+        {% endif %}
+
+        <div
+          class="c-pricing-card{% if plan.featured %} c-pricing-card--featured{% endif %}"
+          {% if plan.badge %}data-badge="{{ plan.badge | escape }}"{% endif %}
+        >
+          <div class="c-pricing-card__name">{{ plan.name | escape }}</div>
+
+          <div class="c-pricing-card__price">
+            <span class="c-pricing-card__price-amount">{{ plan.price | escape }}</span>
+            {% if plan.period %}
+              <span class="c-pricing-card__price-period">/ {{ plan.period | escape }}</span>
+            {% endif %}
+          </div>
+
+          {% if plan.description %}
+            <p class="c-pricing-card__desc">{{ plan.description | escape }}</p>
+          {% endif %}
+
+          {% if plan.features %}
+            <ul class="c-pricing-card__features">
+              {% for feature in plan.features %}
+                <li>
+                  {% include icon.html name="check" %}
+                  <span>{{ feature | escape }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+
+          {% if plan.cta_label %}
+            <div class="c-pricing-card__action">
+              {% include components/button.html
+                label=plan.cta_label
+                href=plan.cta_href
+                variant=btn_variant
+                block=true
+              %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

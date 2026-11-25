@@ -1,48 +1,43 @@
 ---
-title: alert
+layout: default
+title: Alert
+description: Alert component documentation
+permalink: /docs/components/alert/
 ---
 
-# alert
+# Alert
 
-## Overview
-
-Accessible, non-interactive message for status updates, notices, and warnings.
+Inline feedback messages for success, warning, error, and info states.
 
 ## Usage
 
 ```liquid
-{% include components/alert.html title="Saved" message="Your changes are live." variant="success" %}
-{% include components/alert.html title="Heads up" message="Review this before continuing." variant="warning" %}
+{% raw %}{% include components/alert.html
+   variant="success"
+   title="Saved"
+   message="Your changes have been saved."
+   dismissible=true
+%}{% endraw %}
 ```
 
 ## Parameters
 
-| Name | Type | Default | Description |
-|------|------|---------|-------------|
-| title | string | `""` | Optional heading, rendered as text |
-| message | string | `""` | Optional message, rendered as text |
-| content | string | — | Optional trusted nested HTML |
-| variant | string | `"info"` | Visual style: info, success, warning, danger |
-| class | string | `""` | Extra CSS classes |
-| id | string | — | Optional element id |
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `variant` | string | `info` | `info` `success` `warning` `danger` `neutral` |
+| `title` | string | — | Optional heading |
+| `message` | string | — | Body text (required) |
+| `dismissible` | boolean | false | Show close button |
+| `class` | string | — | Extra classes |
+| `id` | string | — | Element id |
 
 ## Variants
 
-- `info`
-- `success`
-- `warning`
-- `danger`
+{% include components/alert.html variant="info" title="Info" message="Informational message." %}
+{% include components/alert.html variant="success" title="Success" message="Action completed." %}
+{% include components/alert.html variant="warning" title="Warning" message="Please review." %}
+{% include components/alert.html variant="danger" title="Error" message="Something went wrong." %}
 
 ## Accessibility
 
-- Uses `role="status"` for info and success messages.
-- Uses `role="alert"` for warning and danger messages.
-- Does not add a dismiss control or JavaScript behavior.
-
-## Security
-
-Title and message are HTML-escaped. `content` is rendered as HTML and should only contain trusted markup.
-
-## Example
-
-See `examples/components/alert.html`.
+Uses `role="alert"`. Icons are `aria-hidden`. Dismiss button has an accessible label.

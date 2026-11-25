@@ -1,0 +1,35 @@
+{% comment %}
+  Features Section
+
+  Parameters:
+  - title, subtitle
+  - items (array of {icon, title, description})
+  - class
+{% endcomment %}
+
+<section class="s-features l-section {{ include.class | escape }}">
+  <div class="l-container">
+    {% if include.title %}
+      <div class="s-features__header">
+        <h2 class="s-features__title">{{ include.title | escape }}</h2>
+        {% if include.subtitle %}
+          <p class="s-features__subtitle">{{ include.subtitle | escape }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="s-features__grid">
+      {% for item in include.items %}
+        <div class="s-features__item">
+          {% if item.icon %}
+            <div class="s-features__icon" aria-hidden="true">
+              {% include icon.html name=item.icon %}
+            </div>
+          {% endif %}
+          <h3 class="s-features__item-title">{{ item.title | escape }}</h3>
+          <p class="s-features__item-desc">{{ item.description | escape }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>

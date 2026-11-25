@@ -1,17 +1,24 @@
-# Jekyll Component Framework (example)
+# Thicket UI (MCP example)
 
-Minimal sample site for exercising **jekyll-component-mcp**.
+This fixture mirrors the Liquid includes, SCSS, and JavaScript from
+[daffadevhosting/jekyll-component-framework](https://github.com/daffadevhosting/jekyll-component-framework).
+It is the Thicket-specific example for **jekyll-component-mcp**, not a required
+framework for other Jekyll projects. The synced source revision is
+`66e77ee04bc179f1b70ec8506cc83cd05e962502`.
 
 ## Structure
 
 ```
-_includes/components/   # Liquid components (button, card, alert, header, footer)
-assets/scss/
-  tokens/               # Design tokens (CSS custom properties)
-  components/           # Component SCSS partials
-docs/components/        # Component documentation
-examples/components/    # Live example pages
+_includes/              # Framework components, sections, and partials
+assets/scss/             # Framework tokens, components, and sections
+assets/js/               # Framework interactions
+docs/components/         # Button, card, and alert documentation
+examples/components/     # Live examples
 ```
+
+The MCP automatically uses Thicket conventions when the configured SCSS
+directory contains both `_framework.scss` and `_tokens.scss`. Projects without
+those files continue to use the normal Jekyll conventions.
 
 ## Build
 

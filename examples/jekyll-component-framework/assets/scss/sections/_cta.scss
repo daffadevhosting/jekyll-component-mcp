@@ -1,0 +1,70 @@
+@use "../mixins";
+
+// =============================================================================
+// CTA Section
+// =============================================================================
+
+.s-cta {
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-6);
+    padding: var(--space-12) var(--space-6);
+    background-color: var(--color-primary-subtle);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    background-image:
+      radial-gradient(circle at 15% 20%, var(--color-primary-subtle), transparent 14rem),
+      radial-gradient(circle at 85% 80%, var(--color-secondary-subtle), transparent 14rem);
+
+    @include mixins.respond-to(md) {
+      padding: var(--space-16) var(--space-12);
+    }
+  }
+
+  &--solid {
+    .s-cta__inner {
+      background-color: var(--color-primary);
+      border-color: transparent;
+
+      .s-cta__title {
+        color: var(--color-text-inverse);
+      }
+
+      .s-cta__subtitle {
+        color: rgba(255, 255, 255, 0.85);
+      }
+    }
+  }
+
+  &__title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text);
+    max-width: 28rem;
+
+    @include mixins.respond-to(md) {
+      font-size: var(--font-size-3xl);
+    }
+  }
+
+  &__subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-muted);
+    max-width: 28rem;
+    line-height: var(--line-height-relaxed);
+
+    @include mixins.respond-to(md) {
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    justify-content: center;
+  }
+}

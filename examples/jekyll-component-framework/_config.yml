@@ -1,26 +1,13 @@
-title: Jekyll Component Framework Example
-description: Sample project for jekyll-component-mcp
+title: Thicket UI — Jekyll Component Garden
+description: Thicket UI fixture for jekyll-component-mcp
 url: ""
 baseurl: ""
-
-navigation:
-  - title: Home
-    url: "/"
-  - title: Button
-    url: "/examples/components/button/"
-  - title: Card
-    url: "/examples/components/card/"
-  - title: Alert
-    url: "/examples/components/alert/"
-  - title: Header
-    url: "/examples/components/header/"
-  - title: Footer
-    url: "/examples/components/footer/"
 
 markdown: kramdown
 highlighter: rouge
 
 permalink: pretty
+lang: en
 
 exclude:
   - Gemfile

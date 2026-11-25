@@ -1,37 +1,91 @@
-.alert {
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-left-width: 4px;
+@use "../mixins";
+
+// =============================================================================
+// Alert Component
+// =============================================================================
+
+.c-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-1);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-bg);
+  border: 1px solid transparent;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
 
-  &__title {
-    margin: 0;
-    font-size: var(--font-size-base);
-    line-height: var(--line-height-tight);
-  }
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
 
-  &__message {
-    margin: var(--space-2) 0 0;
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
   }
 
   &__content {
-    margin-top: var(--space-2);
+    flex: 1;
+    min-width: 0;
   }
 
+  &__title {
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-1);
+  }
+
+  &__close {
+    flex-shrink: 0;
+    @include mixins.button-reset;
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity var(--transition-fast);
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:focus-visible {
+      @include mixins.focus-ring;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  // Variants
   &--info {
-    border-left-color: var(--color-primary);
+    background-color: var(--color-info-subtle);
+    border-color: var(--color-info);
+    color: var(--color-info);
   }
 
   &--success {
-    border-left-color: var(--color-success);
+    background-color: var(--color-success-subtle);
+    border-color: var(--color-success);
+    color: var(--color-success);
   }
 
   &--warning {
-    border-left-color: var(--color-warning);
+    background-color: var(--color-warning-subtle);
+    border-color: var(--color-warning);
+    color: var(--color-warning);
   }
 
   &--danger {
-    border-left-color: var(--color-danger);
+    background-color: var(--color-danger-subtle);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+  }
+
+  &--neutral {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text);
   }
 }

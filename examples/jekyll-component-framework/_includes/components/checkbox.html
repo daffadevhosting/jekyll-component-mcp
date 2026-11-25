@@ -1,0 +1,18 @@
+{% comment %}
+  Checkbox Component
+{% endcomment %}
+
+{% assign input_id = include.id | default: include.name %}
+
+<label class="c-checkbox {{ include.class | escape }}">
+  <input
+    type="checkbox"
+    id="{{ input_id | escape }}"
+    name="{{ include.name | escape }}"
+    value="{{ include.value | default: 'on' | escape }}"
+    {% if include.checked %}checked{% endif %}
+    {% if include.required %}required{% endif %}
+    {% if include.disabled %}disabled{% endif %}
+  >
+  <span>{{ include.label | escape }}</span>
+</label>

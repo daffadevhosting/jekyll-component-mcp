@@ -1,0 +1,62 @@
+{% comment %}
+  Progress Component
+
+  Parameters:
+  - value       (number)  → 0–100
+  - max         (number)  → default 100
+  - label       (string)
+  - show_value  (boolean) → show percentage
+  - variant     (string)  → primary|success|warning|danger|info
+  - size        (string)  → sm|md|lg
+  - indeterminate (boolean)
+  - class       (string)
+  - id          (string)
+{% endcomment %}
+
+{% assign value = include.value | default: 0 %}
+{% assign max = include.max | default: 100 %}
+{% assign variant = include.variant | default: "primary" %}
+{% assign size = include.size | default: "md" %}
+{% assign percent = value | times: 100 | divided_by: max %}
+
+{% capture progress_classes %}
+  c-progress
+  {% if size != "md" %}c-progress--{{ size | escape }}{% endif %}
+  {% if variant != "primary" %}c-progress--{{ variant | escape }}{% endif %}
+  {% if include.indeterminate %}c-progress--indeterminate{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign progress_classes = progress_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<div
+  class="{{ progress_classes | escape }}"
+  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
+>
+  {% if include.label or include.show_value %}
+    <div class="c-progress__label">
+      {% if include.label %}
+        <span class="c-progress__label-text">{{ include.label | escape }}</span>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if include.show_value and include.indeterminate != true %}
+        <span class="c-progress__value">{{ percent | escape }}%</span>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div
+    class="c-progress__track"
+    role="progressbar"
+    aria-valuenow="{% unless include.indeterminate %}{{ value | escape }}{% endunless %}"
+    aria-valuemin="0"
+    aria-valuemax="{{ max | escape }}"
+    {% if include.label %}aria-label="{{ include.label | escape }}"{% endif %}
+    {% if include.indeterminate %}aria-valuetext="Loading"{% endif %}
+  >
+    <div
+      class="c-progress__bar"
+      style="width: {% if include.indeterminate %}40%{% else %}{{ percent | escape }}%{% endif %}"
+    ></div>
+  </div>
+</div>

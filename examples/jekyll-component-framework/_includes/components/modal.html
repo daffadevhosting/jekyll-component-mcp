@@ -1,0 +1,63 @@
+{% comment %}
+  Modal Component
+
+  Parameters:
+  - id          (string, required)
+  - title       (string)
+  - body        (string)
+  - size        (string) → sm|md|lg|xl, default: md
+  - footer      (string) → HTML for footer actions
+  - class       (string)
+
+  Trigger from outside:
+  <button data-modal-open="my-modal">Open</button>
+{% endcomment %}
+
+{% assign modal_id = include.id %}
+{% assign size = include.size | default: "md" %}
+
+{% capture dialog_classes %}
+  c-modal__dialog
+  {% if size != "md" %}c-modal__dialog--{{ size | escape }}{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign dialog_classes = dialog_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+
+<div class="c-modal-backdrop" data-modal-backdrop="{{ modal_id | escape }}" hidden></div>
+
+<div
+  class="c-modal"
+  id="{{ modal_id | escape }}"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="{{ modal_id | escape }}-title"
+  hidden
+  data-modal
+>
+  <div class="{{ dialog_classes | escape }}">
+    <div class="c-modal__header">
+      <h2 class="c-modal__title" id="{{ modal_id | escape }}-title">
+        {{ include.title | escape }}
+      </h2>
+      <button
+        type="button"
+        class="c-modal__close"
+        aria-label="Close dialog"
+        data-modal-close
+      >
+        {% include icon.html name="x" %}
+      </button>
+    </div>
+
+    <div class="c-modal__body">
+      {{ include.body }}
+      {{ include.content }}
+    </div>
+
+    {% if include.footer %}
+      <div class="c-modal__footer">
+        {{ include.footer }}
+      </div>
+    {% endif %}
+  </div>
+</div>

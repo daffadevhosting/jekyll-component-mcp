@@ -1,26 +1,68 @@
 {% comment %}
-  Component: card
-  Usage: {% include components/card.html title="Title" body="Body text" variant="default" %}
-{% endcomment %}
-{% assign variant = include.variant | default: "default" %}
-{% assign title = include.title | default: "" %}
-{% assign body = include.body | default: "" %}
-{% assign extra_class = include.class | default: "" %}
+  Card Component
 
-<article
-  class="card card--{{ variant | escape }} {{ extra_class | escape }}"
-  {% if include.id %}id="{{ include.id | escape }}"{% endif %}
->
-  {% if title != blank %}
-    <h3 class="card__title">{{ title | escape }}</h3>
+  Parameters:
+  - title       (string)
+  - subtitle    (string)
+  - body        (string)  → HTML content for body (or use content capture)
+  - footer      (string)
+  - media       (string)  → image URL
+  - media_alt   (string)
+  - hoverable   (boolean)
+  - glare       (boolean) → pointer-tracked highlight on hover/focus
+  - border_beam (boolean) → animated accent around the card border
+  - elevated    (boolean)
+  - borderless  (boolean)
+  - class       (string)
+  - id          (string)
+{% endcomment %}
+
+{% capture card_classes %}
+  c-card
+  {% if include.hoverable %}c-card--hoverable{% endif %}
+  {% if include.glare %}c-card--glare{% endif %}
+  {% if include.border_beam %}c-card--border-beam{% endif %}
+  {% if include.elevated %}c-card--elevated{% endif %}
+  {% if include.borderless %}c-card--borderless{% endif %}
+  {{ include.class | escape }}
+{% endcapture %}
+{% assign card_classes = card_classes | strip | strip_newlines | split: " " | compact | join: " " %}
+{% capture safe_media %}{% include partials/safe-url.html url=include.media %}{% endcapture %}
+{% assign safe_media = safe_media | strip %}
+
+<article class="{{ card_classes | escape }}" {% if include.id %}id="{{ include.id | escape }}"{% endif %}>
+  {% if safe_media != "" %}
+    <div class="c-card__media">
+      <img
+        src="{{ safe_media | relative_url | escape }}"
+        alt="{{ include.media_alt | default: '' | escape }}"
+        loading="lazy"
+        decoding="async"
+      >
+    </div>
   {% endif %}
-  {% if body != blank %}
-    <div class="card__body">{{ body | escape }}</div>
+
+  {% if include.title or include.subtitle %}
+    <header class="c-card__header">
+      {% if include.title %}
+        <h3 class="c-card__title">{{ include.title | escape }}</h3>
+      {% endif %}
+      {% if include.subtitle %}
+        <p class="c-card__subtitle">{{ include.subtitle | escape }}</p>
+      {% endif %}
+    </header>
   {% endif %}
-  {% if include.content %}
-    <div class="card__content">{{ include.content }}</div>
+
+  {% if include.body or include.content %}
+    <div class="c-card__body">
+      {{ include.body }}
+      {{ include.content }}
+    </div>
   {% endif %}
+
   {% if include.footer %}
-    <footer class="card__footer">{{ include.footer }}</footer>
+    <footer class="c-card__footer">
+      {{ include.footer }}
+    </footer>
   {% endif %}
 </article>

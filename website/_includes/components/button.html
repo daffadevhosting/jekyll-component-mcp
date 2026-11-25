@@ -1,3 +1,3 @@
-<a class="button button--{{ include.variant | default: 'primary' | escape }}" href="{{ include.url | escape }}"{% if include.external %} target="_blank" rel="noreferrer"{% endif %}>
-  {{ include.label | escape }}{% if include.arrow %}<span aria-hidden="true">↗</span>{% endif %}
+<a class="c-button c-button--{{ include.variant | default: 'primary' | escape }} c-button--{{ include.size | default: 'md' | escape }}" href="{{ include.url | escape }}"{% if include.external %} target="_blank" rel="noopener noreferrer"{% endif %}>
+  <span class="c-button__label">{{ include.label | escape }}</span>{% if include.arrow %}<span class="c-button__icon" aria-hidden="true">↗</span>{% endif %}
 </a>

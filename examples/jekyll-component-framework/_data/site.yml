@@ -1,0 +1,5 @@
+footer:
+  copyright: "Thicket UI example for jekyll-component-mcp"
+  links:
+    - title: Components
+      url: /examples/components/button/
